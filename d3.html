@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Signal Processing with D3.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { font-family: sans-serif; }
+    .line-original { stroke: steelblue; stroke-width: 2; fill: none; }
+    .line-filtered { stroke: orange; stroke-width: 2; fill: none; }
+    .axis path, .axis line { fill: none; stroke: #000; shape-rendering: crispEdges; }
+  </style>
+</head>
+<body>
+  <h2>Signal Processing Visualization (D3.js)</h2>
+  <svg width="800" height="400"></svg>
+
+  <script>
+    const svg = d3.select("svg");
+    const width = +svg.attr("width");
+    const height = +svg.attr("height");
+    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+
+    // Simulate noisy signal
+    const data = Array.from({ length: 200 }, (_, i) => {
+      const x = i;
+      const y = Math.sin(i * 0.1) + (Math.random() - 0.5) * 0.8; // sine + noise
+      return { x, y };
+    });
+
+    // Moving average filter
+    function movingAverage(data, windowSize) {
+      return data.map((d, i, arr) => {
+        const start = Math.max(0, i - Math.floor(windowSize / 2));
+        const end = Math.min(arr.length, i + Math.ceil(windowSize / 2));
+        const subset = arr.slice(start, end);
+        const avg = d3.mean(subset, d => d.y);
+        return { x: d.x, y: avg };
+      });
+    }
+
+    const filteredData = movingAverage(data, 10);
+
+    // Scales
+    const xScale = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.x))
+      .range([margin.left, width - margin.right]);
+
+    const yExtent = d3.extent(data.concat(filteredData), d => d.y);
+    const yScale = d3.scaleLinear()
+      .domain([yExtent[0] - 0.5, yExtent[1] + 0.5])
+      .range([height - margin.bottom, margin.top]);
+
+    // Line generators
+    const lineOriginal = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y));
+
+    const lineFiltered = d3.line()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y));
+
+    // Draw original signal
+    svg.append("path")
+      .datum(data)
+      .attr("class", "line-original")
+      .attr("d", lineOriginal);
+
+    // Draw filtered signal
+    svg.append("path")
+      .datum(filteredData)
+      .attr("class", "line-filtered")
+      .attr("d", lineFiltered);
+
+    // Axes
+    const xAxis = d3.axisBottom(xScale);
+    const yAxis = d3.axisLeft(yScale);
+
+    svg.append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(xAxis);
+
+    svg.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(yAxis);
+  </script>
+</body>
+</html>
