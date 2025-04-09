@@ -67,7 +67,7 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    setwaiting(true)
     if (!firstName || !lastName || !email || !password   || !dateOfBirth || !gender ) {
       setSnackbarMessage('Please fill in all fields.');
       setOpenSnackbar(true);
@@ -96,9 +96,11 @@ const Register = () => {
           setTimeout(() => navigate.push("/login"), 3000);
         }
       } catch (error) {
-        setwaiting(false);
+        
         setSnackbarMessage(error.response?.data?.error);
         setOpenSnackbar(true);
+      }finally{
+        setwaiting(false);
       }
     }
   };
@@ -291,7 +293,7 @@ const Register = () => {
               
               <Grid item size={12}>
                 <FormControl sx={{ ml: 1, width: { md: '95%', xs: "95%" } }} variant="outlined">
-                  <Button type='submit' variant="contained" disabled={waiting} >
+                  <Button type='submit'  variant="contained" disabled={waiting} >
                     Register
                   </Button>
                 </FormControl>

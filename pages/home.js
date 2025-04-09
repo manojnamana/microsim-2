@@ -932,11 +932,11 @@ const SavedataonDatabase = async()=>{
 
  {/* Summary */}
  <Card elevation={2} sx={{p:2,mb:2}}>
-              <div className="flex flex-col md:flex-row justify-between items-start  md:items-center gap-2">
+              <div className="flex  flex-row justify-between items-center gap-2">
                 <h3 className="text-lg font-semibold flex items-center gap-2 w-full md:w-auto">
                   <span>📋</span> Summary
                 </h3>
-                <div className="flex items-center justify-between w-full md:w-auto gap-2">
+
                 {/* <span className="text-md">Console log</span> */}
                 <IconButton 
         onClick={() => setShowProFeatures(!showProFeatures)}
@@ -952,8 +952,8 @@ const SavedataonDatabase = async()=>{
           }} 
           aria-label="Toggle pro features" 
         />
-      </IconButton>
-              </div>   
+                </IconButton>
+ 
  </div>
 <div className="bg-gray-100 mt-3 p-4 rounded-lg">
   {isProcessing ? (

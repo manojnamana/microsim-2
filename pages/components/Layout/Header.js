@@ -18,7 +18,7 @@ const Header = () => {
       }}
     >
 
-        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+        <Toolbar disableGutters sx={{ display:'flex',justifyContent: 'space-between',flexDirection:{xs:'column',md:'row'},alignItems:'center' }}>
           {/* Left Side */}
           <Box sx={{ display: 'flex', alignItems: 'center'}}>
             <Box sx={{ 
