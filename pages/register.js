@@ -67,7 +67,7 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setwaiting(true)
+    
     if (!firstName || !lastName || !email || !password   || !dateOfBirth || !gender ) {
       setSnackbarMessage('Please fill in all fields.');
       setOpenSnackbar(true);
@@ -78,6 +78,7 @@ const Register = () => {
       setSnackbarMessage('Please enter a valid date of birth (YYYY-MM-DD) above 2009 ');
       setOpenSnackbar(true);
     } else {
+      setwaiting(true)
       try {
         const response = await axios.post('https://micro-sim-backend.vercel.app/api/register/', {
           first_name: firstName,

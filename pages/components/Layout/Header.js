@@ -2,6 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Container, IconButton } from '@mui/material';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
 
 
 const Header = () => {
@@ -50,7 +51,7 @@ const Header = () => {
           <button className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm">
          Help
        </button>
-            <button onClick={()=>(navigate.push('/'))} className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm">
+            <button onClick={()=>(navigate.push('/'),Cookies.remove('access_token'))} className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm">
          Logout
        </button>
           </Box>

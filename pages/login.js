@@ -5,12 +5,11 @@ import { Button, FormControl, IconButton, InputLabel, OutlinedInput, Paper, Typo
 import InputAdornment from '@mui/material/InputAdornment';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link as MuiLink } from '@mui/material';
+import { Link } from '@mui/material';
 import Google from "@mui/icons-material/Google";
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Cookies from 'js-cookie'
-import Link from 'next/link';
 
 
 const Login = () => {
@@ -145,15 +144,11 @@ const Login = () => {
               <Button variant='contained' type='submit' sx={{ my: 3 }} >Login</Button>
             }
 <Stack direction={{md:"row",xs:"column"}} display={"flex"} justifyContent={"space-between"} spacing={4}>
-  <Link href="/register" passHref legacyBehavior>
-    <MuiLink style={{ textDecoration: "none", fontSize: 20 }} textAlign={"center"}>
-      Create New Account
-    </MuiLink>
+  <Link href="/register" underline='none' fontSize={20} >
+  Create New Account
   </Link>
-  <Link href="/forgotpassword" passHref legacyBehavior>
-    <MuiLink style={{ textDecoration: "none", fontSize: 20 }} textAlign={"center"}>
-      Forgot password ?
-    </MuiLink>
+  <Link href="/forgotpassword" underline='none' fontSize={20}>
+    Forgot password ?
   </Link>
 </Stack>
             <Stack mt={3}>
