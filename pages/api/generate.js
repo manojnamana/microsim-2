@@ -426,7 +426,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { source, input, format = 'p5js',apiKeyFormate } = req.body;
+    const { source, input, format = 'p5js',apiKeyFormate=process.env.ANTHROPIC_API_KEY } = req.body;
+    console.log(apiKeyFormate);
     
     if (!source || !input) {
       return res.status(400).json({ 

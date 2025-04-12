@@ -107,7 +107,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { summary,apiKeyFormate } = req.body;
+  const { summary,apiKeyFormate=process.env.ANTHROPIC_API_KEY } = req.body;
 
   if (!summary) {
     return res.status(400).json({

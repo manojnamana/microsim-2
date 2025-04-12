@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     console.log('Starting the image processing API call');
     
     // Extracting the file (in base64 format) and format from the request body
-    const { file: base64Image, formate,apiKeyFormate } = req.body;
+    const { file: base64Image, formate,apiKeyFormate=process.env.ANTHROPIC_API_KEY } = req.body;
     console.log(`Requested format: ${formate}`);
     
     // Check if the image file is included in the request. If not, return an error response.
