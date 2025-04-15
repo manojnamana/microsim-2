@@ -121,7 +121,10 @@ const Home = () => {
        showSnackbar('Please select an image first', 'error');
        return;
      }
-     
+     if((showApiKeyToggle&&!GetApikey)){
+        showSnackbar('Please enter a valid API key', 'error');
+        return;
+     }
      setIsProcessing(true);
      setCodeOutput('');
      setSummary("")
@@ -272,7 +275,8 @@ const Home = () => {
         break;
       case "mermaidjs":
         codeToShow = cleanCode(mermaidjsCode);
-        {mermaidjsCode.length ===0 && fetchwikiDatawithai()}
+        console.log(mermaidjsCode.length)
+        {mermaidjsCode.length ===0 && fetchwikiDatawithai() }
         break;
       case "threejs":
         codeToShow = cleanCode(threejsCode);
@@ -295,15 +299,19 @@ const Home = () => {
   }
 
   const fetchwikiDatawithai = async()=>{
-    setSimulationActive(false)
+    
     if (!wikipediaInput) return;
-
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-
-
+    if((showApiKeyToggle&&!GetApikey)){
+      showSnackbar('Please enter a valid API key', 'error');
+      return;
+   }
+   setSimulationActive(false)
+   setIsProcessing(true);
+   setSummary("");
+   setError(null);
+ 
      try {
+      setIsProcessing(true);
       const response = await fetch("/api/wiki", {
         method: "POST",
         headers: {
@@ -320,9 +328,20 @@ const Home = () => {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || "Failed to generate visualization");
+        // throw new Error(data.error || "Failed to generate visualization");
+
+        if(data?.error?.includes("401")){
+        showSnackbar("Please Give Valid Api Key", 'error');
       }
+      else if(data?.error?.includes("400")){
+        showSnackbar("Low On Tokens Purchase Your Credits", 'error');
+
+      }
+    }
       
+    if(data?.success){
+      setIsProcessing(false);
+    }
       if(hasCookie("Summary")){
         console.log("Not need Summary")
         setSummary(GetSummary)
@@ -369,6 +388,7 @@ const Home = () => {
       setLearningObjectives(data.learningObjectives || "");
     } catch (error) {
       console.error("Error submitting text:", error);
+      // showSnackbar(error.message, 'error');
       setError(error.message);
     } finally {
       setIsProcessing(false);
@@ -379,16 +399,20 @@ const Home = () => {
    const fetchWikiData = async () => {
     setSimulationActive(false)
     if (!wikipediaInput) return;
-
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-
     let URL = wikipediaInput
+    if(!URL.includes("https://en.wikipedia.org/wiki/")){ 
+      showSnackbar('Please enter a valid Wikipedia URL', 'error');
+      // console.log("Please enter a valid Wikipedia URL")
+      return
+    } 
+
     let wikitext = URL.split('https://en.wikipedia.org/wiki/')
     
     try {
-      const response = await WikiDataFromDb(wikitext[1]);
+      setIsProcessing(true);
+    setSummary("");
+    setError(null);
+      const response = await WikiDataFromDb(wikitext[1].toLowerCase());
       const data = response?.data;
     
       if (response.status === 200) {
@@ -410,7 +434,7 @@ const Home = () => {
       }
       else if(response.status === 404){
         fetchwikiDatawithai()
-        setIsProcessing(true)
+         setIsProcessing(false)
       }
     } 
     catch(err){
@@ -426,6 +450,10 @@ const Home = () => {
     setSimulationActive(false)
     setWikipediaInput("")
     if(!summary) return
+    if((showApiKeyToggle&&!GetApikey)){
+      showSnackbar('Please enter a valid API key', 'error');
+      return;
+   }
     setMcqLoading(true)
     try{
       const response = await fetch("/api/mcq", {
@@ -465,6 +493,10 @@ const Home = () => {
    const fetchData = async () => {
      setSimulationActive(false)
      if (!textInput) return;
+     if((showApiKeyToggle&&!GetApikey)){
+      showSnackbar('Please enter a valid API key', 'error');
+      return;
+   }
  
      setIsProcessing(true);
      setSummary("");
@@ -528,6 +560,8 @@ useEffect(()=>{
       fetchData()
     }
 },[activeFormat])
+
+
 
 
 
