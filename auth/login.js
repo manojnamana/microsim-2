@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { Button, Paper, Typography, Snackbar, Alert, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 
 const GoogleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -152,7 +152,7 @@ const Login = () => {
       >
         <Alert 
           onClose={handleCloseSnackbar} 
-          severity={snackbarMessage === 'Login successful!' ? 'success' : 'error'}
+          severity={snackbarMessage === 'Redirecting to Google login...' ? 'success' : 'error'}
           sx={{ width: '100%' }}
         >
           {snackbarMessage}

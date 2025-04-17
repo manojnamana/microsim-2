@@ -22,7 +22,7 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState('wikipedia');
   const [wikipediaInput, setWikipediaInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeFormat, setActiveFormat] = useState('p5js');
+  const [activeFormat, setActiveFormat] = useState('mermaidjs');
   const [simulationActive, setSimulationActive] = useState(false);
   const [codeOutput, setCodeOutput] = useState('');
   const [summary, setSummary] = useState('');
@@ -786,9 +786,9 @@ const SavedataonDatabase = async()=>{
           <span>👨‍💻</span> Code Editor
         </h3>
       </div>
-      <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-md flex-1 flex overflow-auto ">
+      <div className="bg-gray-900 text-gray-300  rounded-lg font-mono text-md flex-1 flex overflow-auto ">
         {isProcessing ? (
-           <div className="flex flex-col items-center justify-center h-full w-full">
+           <div className="flex flex-col items-center bg-black justify-center h-full w-full">
            <img 
                src="/Micro Simulating - MicroSim Learning Default Image.png" 
                alt="MicroSim Processing" 
@@ -796,12 +796,12 @@ const SavedataonDatabase = async()=>{
            />
        </div>
         ) : codeOutput ? (
-          <pre>{codeOutput}</pre>
+          <pre className='p-4'>{codeOutput}</pre>
         ) : (
           <img 
             src="/Code - MicroSim Learning Default Image.png" 
             alt="MicroSim Default" 
-            className="max-w-full max-h-full object-contain"
+            className="max-w-full max-h-full object-contain bg-black"
           />
         )}
       </div>
@@ -816,15 +816,15 @@ const SavedataonDatabase = async()=>{
           <span>📊</span> Simulation Viewer
         </h3> 
       </div>
-      <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-md flex-1 flex overflow-auto ">
+      <div className="bg-gray-900 text-gray-300  rounded-lg font-mono text-md flex-1 flex overflow-auto ">
                 {isProcessing ? (
                     <img 
                         src="/Simulation - MicroSim Learning Default Image.png" 
                         alt="Simulation Loading" 
-                        className="max-w-full max-h-full object-contain"
+                        className="max-w-full max-h-full object-contain bg-black"
                     />
                 ) : simulationActive ? (
-          <div className="w-full h-full bg-black text-white">
+          <div className="w-full h-full bg-black p-4 text-white">
              {activeFormat === "p5js" && <P5jS running={true} result={codeOutput}/>}
             {activeFormat === "threejs" && <ThreejS running={true} result={codeOutput}/>}
             {activeFormat === "d3js" && <D3Editor running={true} result={codeOutput}/>}
