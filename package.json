@@ -12,10 +12,11 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^7.0.0",
-    "@mui/material": "^7.0.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
     "@mui/styled-engine-sc": "^7.0.0",
     "@tailwindcss/oxide": "^4.1.1",
+    "@toolpad/core": "^0.14.0",
     "axios": "^1.8.4",
     "browser-image-compression": "^2.0.2",
     "cookies-next": "^5.1.0",
@@ -36,7 +37,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/react": "^19.0.12",
+    "@types/node": "22.14.1",
+    "@types/react": "19.1.2",
     "@types/react-dom": "^19.0.4",
     "tailwindcss": "^4",
     "typescript": "5.8.2"

@@ -46,6 +46,8 @@ const Home = () => {
   const [threejsCode,setThreejsCode] = useState("")
   const [mermaidjsCode,setMermaidjsCode] = useState("")
 
+  
+
   const [mcqData,setMcqData]= useState([])
   const [viewMcq,setViewMcq] = useState(false)
   const[mcqLoading,setMcqLoading] = useState(false)
@@ -414,6 +416,7 @@ const Home = () => {
     setError(null);
       const response = await WikiDataFromDb(wikitext[1].toLowerCase());
       const data = response?.data;
+      
     
       if (response.status === 200) {
         const listData = [data];
@@ -705,46 +708,51 @@ const SavedataonDatabase = async()=>{
       <div    className="flex flex-col md:flex-row justify-between gap-4 md:items-center w-full">
       {/* Input Group */}
       <form onSubmit={(e) => {
-        e.preventDefault();
-        fetchWikiData(); // Call the function when submitting the form
-        RemoveKey()
-      }} className="space-y-4">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={wikipediaInput}
-                        onChange={(e) => setWikipediaInput(e.target.value)}
-                        placeholder="Enter Wikipedia URL"
-                        
-                        className="w-full border rounded-lg px-4 py-2 md:min-w-[400px] lg:min-w-[480px]"
-                        disabled={isProcessing}
-                      />
-                      <button
-                        type="submit"
-                        className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 ${
-                          isProcessing ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        disabled={isProcessing}
-                      >
-                        <span>🔍</span>
-                      </button>
-                    </div>
-                  </form>
+  e.preventDefault();
+  fetchWikiData(); // Call the function when submitting the form
+  RemoveKey()
+}} className="space-y-4">
+  <div className="flex gap-2">
+  <input
+  type="text"
+  value={wikipediaInput}
+  onChange={(e) => setWikipediaInput(e.target.value)}
+  placeholder="Enter Wikipedia URL"
+  className="w-full border-3 border-gray-400 rounded-lg px-4 py-2 md:min-w-[400px] lg:min-w-[480px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:shadow-md transition-shadow"
+  disabled={isProcessing}
+  style={{ 
+    backgroundColor: '#ffffff', 
+    color: '#202124',
+    borderColor: '#9ca3af' // Explicit gray-400 color
+  }}
+/>
+    <button
+      type="submit"
+      className={`bg-[#1a73e8] text-white px-4 py-2 rounded-lg hover:bg-[#1b66c9] focus:outline-none focus:ring-2 focus:ring-blue-200 shadow-sm hover:shadow-md transition-shadow ${
+        isProcessing ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+      disabled={isProcessing}
+      aria-label="Search Wikipedia"
+    >
+      <span>🔍</span>
+    </button>
+  </div>
+</form>
 
       <div className=" w-full md:w-auto flex gap-2   overflow-x-auto  pb-2 md:pb-0 lg:pl-16">
-        
+          <FormatButton  
+            id="mermaidjs" 
+            label="Mermaid" 
+            icon="🔀" 
+            isActive={activeFormat === 'mermaidjs'} 
+          />
+          
           <FormatButton  
             id="p5js" 
             label="p5.js" 
             icon="🎨" 
             isActive={activeFormat === 'p5js'}
              
-          />
-          <FormatButton  
-            id="mermaidjs" 
-            label="Mermaid" 
-            icon="🔀" 
-            isActive={activeFormat === 'mermaidjs'} 
           />
           <FormatButton  
             id="threejs" 
@@ -770,7 +778,7 @@ const SavedataonDatabase = async()=>{
 {/* Code Editor and Viewer */}
 <Grid container spacing={2}>
 
-<Grid size = {{xs:12,md:6}} height={{md:800,xs:500}}>
+<Grid size={{xs:12, md:6}} height={{md:800, xs:500}}>
     {/* Code Editor */}
     <div className="bg-white w-full p-6 shadow-md h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
@@ -778,21 +786,27 @@ const SavedataonDatabase = async()=>{
           <span>👨‍💻</span> Code Editor
         </h3>
       </div>
-      <div className="bg-gray-900 text-gray-300  p-4 rounded-lg font-mono text-md flex-1 flex overflow-auto ">
+      <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-md flex-1 flex overflow-auto ">
         {isProcessing ? (
-          <Stack display={"flex"} spacing={1}>
-            <Skeleton variant='rectangular' height={10} width={250} sx={{bgcolor:"grey"}} />
-            <Skeleton variant='rectangular' height={10} width={200} sx={{bgcolor:"grey"}} />
-            <Skeleton variant='rectangular' height={10} width={220} sx={{bgcolor:"grey"}} />
-            <Skeleton variant='rectangular' height={10} width={100} sx={{bgcolor:"grey"}} />
-            <Skeleton variant='rectangular' height={10} width={150} sx={{bgcolor:"grey"}} />
-          </Stack>
+           <div className="flex flex-col items-center justify-center h-full w-full">
+           <img 
+               src="/Micro Simulating - MicroSim Learning Default Image.png" 
+               alt="MicroSim Processing" 
+               className="max-w-full max-h-full object-contain"
+           />
+       </div>
+        ) : codeOutput ? (
+          <pre>{codeOutput}</pre>
         ) : (
-          <pre>{codeOutput || "// No code generated yet"}</pre>
+          <img 
+            src="/Code - MicroSim Learning Default Image.png" 
+            alt="MicroSim Default" 
+            className="max-w-full max-h-full object-contain"
+          />
         )}
       </div>
     </div>
-    </Grid>
+</Grid>
 
     <Grid size = {{xs:12,md:6}} height={{md:800,xs:500}}>
     {/* Simulation Viewer */}
@@ -802,8 +816,14 @@ const SavedataonDatabase = async()=>{
           <span>📊</span> Simulation Viewer
         </h3> 
       </div>
-      <div className="bg-gray-900  text-gray-300 p-4 rounded-lg font-mono text-md flex-1 flex overflow-auto">
-        {simulationActive ? (
+      <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-md flex-1 flex overflow-auto ">
+                {isProcessing ? (
+                    <img 
+                        src="/Simulation - MicroSim Learning Default Image.png" 
+                        alt="Simulation Loading" 
+                        className="max-w-full max-h-full object-contain"
+                    />
+                ) : simulationActive ? (
           <div className="w-full h-full bg-black text-white">
              {activeFormat === "p5js" && <P5jS running={true} result={codeOutput}/>}
             {activeFormat === "threejs" && <ThreejS running={true} result={codeOutput}/>}

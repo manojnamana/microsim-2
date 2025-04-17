@@ -1,175 +1,165 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import { Button, FormControl, IconButton, InputLabel, OutlinedInput, Paper, Typography, Snackbar, Alert, Stack, Grid, Chip } from '@mui/material';
-import InputAdornment from '@mui/material/InputAdornment';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link } from '@mui/material';
-import Google from "@mui/icons-material/Google";
+import { Button, Paper, Typography, Snackbar, Alert, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
-import axios from 'axios';
-import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 
+const GoogleIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+    <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+      <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+      <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+      <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+      <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+    </g>
+  </svg>
+);
 
 const Login = () => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [showPassword, setShowPassword] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
-  const [waiting, setwaiting] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
-   
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (event) => event.preventDefault();
-  const navigate = useRouter();
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!email || !password) {
-      setSnackbarMessage('Please fill in all fields.');
-      setOpenSnackbar(true);
-    } else if (!validateEmail(email)) {
-      setSnackbarMessage('Please enter a valid email address.');
-      setOpenSnackbar(true);
-    } else {
-      setwaiting(true)
-      try {
-        setwaiting(true)
-        const response = await axios.post('https://micro-sim-backend.vercel.app/api/login/', { email, password, });
-
-        
-        if (response.status === 200) {
-          setSnackbarMessage('Login successful!');
-          setwaiting(false)
-          setOpenSnackbar(true);
-          Cookies.set('access_token', response.data.access, { expires: 7 });
-          setTimeout(() => navigate.push("/verify?access_token=" + response.data.access), 3000);
-        }
-      } catch(error) {
-        setwaiting(false)
-        setSnackbarMessage(error.response?.data?.error || "No user found with this email address! ");
-        setOpenSnackbar(true);
-      }
-    }
-  };
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
+  const [waiting, setWaiting] = React.useState(false);
+  
+  const router = useRouter();
 
   const handleGoogleLogin = () => {
+    setWaiting(true);
+    setSnackbarMessage('Redirecting to Google login...');
+    setOpenSnackbar(true);
     window.location.href = 'https://micro-sim-backend.vercel.app/accounts/google/login/';
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenSnackbar(false);
   };
   
   return (
-    <Box>
-      <Stack flexDirection={"row"} justifyContent={"center"} alignItems={"center"} display={{ md: "none" }}>
-        <Stack alignItems={"flex-end"}>
-          <img src='/static/images/MicroSim Learning Logo-Black.png' alt ="logo" width={60} />
-        </Stack>
-        <Typography fontSize={{ md: "20", xs: 25 }}  fontWeight={"bold"} my={3} >
-        MicroSim Learning
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: '100vh',
+        p: { xs: 2, sm: 3 },
+      }}
+    >
+      {/* Logo and Title */}
+      <Stack 
+        direction="row" 
+        justifyContent="center" 
+        alignItems="center"
+        spacing={2}
+        sx={{ 
+          mt: { xs: 4, md: 6 },
+          mb: { xs: 4, md: 6 }
+        }}
+      >
+        <img 
+          src='/static/images/MicroSim Learning Logo-Black.png' 
+          alt="logo" 
+          style={{ width: '60px', height: 'auto' }}
+        />
+        <Typography 
+          variant="h4" 
+          fontWeight="bold"
+          sx={{ 
+            fontSize: { xs: '1.3rem', sm: '2.2rem', md: '2.5rem' }
+          }}
+        >
+          MicroSim Learning
         </Typography>
       </Stack>
 
-      <Grid container alignItems={"center"} p={2} sx={{md:{display:"flex",justifyContent:"center", height:"100vh",flexDirection:"column"}}} >
-        <Grid size={{md:6,xs:12}} sx={{display:{xs:"none",md:"flex"}}}>
-          <Stack flexDirection={"row"} alignItems={"center"} justifyContent={"center"} ml={6}>
-            <img src='/static/images/MicroSim Learning Logo-Black.png' alt ="logo" width={100} height={200}/>
-            <Typography fontSize={35} fontWeight={"bold"}>MicroSim Learning</Typography>
-          </Stack>
-        </Grid>
-        <Grid size={{md:6,xs:12}} sx={{paddingLeft:{  md: 30 }} }>
-          <Paper
-            elevation={3}
-            sx={{
-              display: "flex", justifyContent: 'center', flexDirection: "column", alignItems: "center",
-              mt: { md: "12%", xs: "0" }, mb: { md: "10%", xs: "15%" }, p: 3, mx: {xs:"5%",md:'10%'}, maxWidth: 450,
-              boxShadow:10
-            }}
-            component="form"
-            noValidate
-            autoComplete="off"
-            onSubmit={handleSubmit}
-          >
-            <Typography fontSize={{ md: "20", xs: 25 }} textAlign={"center"} fontWeight={"bold"} my={3} >
-              Login
-            </Typography>
-            <FormControl sx={{ m: 1, width: '80%' }} variant="outlined">
-              <TextField
-                autoFocus
-                required
-                margin="dense"
-                id="name"
-                name="email"
-                sx={{ mb: 3 }}
-                placeholder='Email Address'
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={!validateEmail(email) && email.length > 0}
-                helperText={!validateEmail(email) && email.length > 0 ? "Invalid email format" : ""}
-              />
-            </FormControl>
-            <FormControl sx={{ m: 1, width: '80%' }} required variant="outlined">
-              <OutlinedInput
-                placeholder='Password'
-                // id="outlined-adornment-password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                endAdornment={
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                }
-                // label="Password"
-              />
-            </FormControl>
-            {waiting ? 
-              <Button variant='contained' disabled sx={{ my: 3 }} >Login</Button> 
-              : 
-              <Button variant='contained' type='submit' sx={{ my: 3 }} >Login</Button>
-            }
-<Stack direction={{md:"row",xs:"column"}} display={"flex"} justifyContent={"space-between"} spacing={4}>
-  <Link href="/register" underline='none' fontSize={20} >
-  Create New Account
-  </Link>
-  <Link href="/forgotpassword" underline='none' fontSize={20}>
-    Forgot password ?
-  </Link>
-</Stack>
-            <Stack mt={3}>
-              <Button onClick={handleGoogleLogin}>
-                <Chip variant="filled" label ="Login with Google" icon={<Google style={{color:'white'}} />} color='error' />
-              </Button>
-            </Stack>
-          </Paper>
-        </Grid>
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
+      {/* Login Card */}
+      <Paper
+        elevation={3}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          p: { xs: 2, sm: 3, md: 4 },
+          width: '100%',
+          maxWidth: '450px',
+          borderRadius: 2,
+          boxShadow: 3,
+          mb: 4
+        }}
+      >
+        <Typography 
+          variant="h5" 
+          fontWeight="bold" 
+          sx={{ 
+            mb: 3,
+            fontSize: { xs: '1.5rem', md: '1.75rem' }
+          }}
         >
-          <Alert onClose={handleCloseSnackbar} severity={snackbarMessage === 'Login successful!' ? 'success' : 'error'} sx={{ width: '100%' }}>
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-      </Grid>
+          Login
+        </Typography>
+
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            mb: 4,
+            color: 'text.secondary',
+            textAlign: 'center',
+            fontSize: { xs: '1rem', md: '1.1rem' }
+          }}
+        >
+          Welcome user, please login to continue
+        </Typography>
+        
+        {/* Google Login Button */}
+        <Box sx={{ width: '100%', maxWidth: '350px', mb: 3 }}>
+          <Button 
+            onClick={handleGoogleLogin}
+            variant="outlined"
+            fullWidth
+            startIcon={<GoogleIcon />}
+            disabled={waiting}
+            sx={{
+              backgroundColor: 'white',
+              border: '1px solid',
+              borderColor: 'divider',
+              color: 'text.primary',
+              textTransform: 'none',
+              fontSize: '1rem',
+              py: 1.5,
+              '&:hover': {
+                backgroundColor: 'action.hover',
+                borderColor: 'text.primary'
+              },
+              '& .MuiButton-startIcon': {
+                mr: 1.5
+              }
+            }}
+          >
+            {waiting ? 'Logging in with Google...' : 'Login with Google'}
+          </Button>
+        </Box>
+
+       
+      </Paper>
+
+      {/* Snackbar Notification */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbarMessage === 'Login successful!' ? 'success' : 'error'}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
-}
+};
 
 export default Login;
