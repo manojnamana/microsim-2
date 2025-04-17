@@ -41,8 +41,9 @@ const Login = () => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh',
+        height: '100vh',
         p: { xs: 2, sm: 3 },
       }}
     >
@@ -60,13 +61,13 @@ const Login = () => {
         <img 
           src='/static/images/MicroSim Learning Logo-Black.png' 
           alt="logo" 
-          style={{ width: '60px', height: 'auto' }}
+          style={{ width: '40px', height: 'auto' }}
         />
         <Typography 
           variant="h4" 
           fontWeight="bold"
           sx={{ 
-            fontSize: { xs: '1.3rem', sm: '2.2rem', md: '2.5rem' }
+            fontSize: { xs: '20px', md: '30px' }
           }}
         >
           MicroSim Learning
