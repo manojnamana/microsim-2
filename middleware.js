@@ -6,7 +6,7 @@ export function middleware(req) {
 
   // List of protected routes
   const protectedPaths = [
-    '/home',
+    // '/home',
     '/dashboard',
     '/profile'
   ];

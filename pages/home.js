@@ -13,7 +13,6 @@ import ThreejS from './components/Viewer/Threejs';
 import D3Editor from './components/Viewer/D3Editor';
 import MermaidEditor from './components/Viewer/Mermaid';
 import { SaveDataToDb, WikiDataFromDb } from './api/DbApi/wikiFromDb';
-import { useRouter } from 'next/router';
 import Mcq from './components/Utils/Mcq';
 
 
@@ -41,35 +40,20 @@ const Home = () => {
   const [showProFeatures, setShowProFeatures] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [GetApikey,setGetApikey] = useState(Cookies.get("apiKey"))
-  const [p5jsCode,setp5jsCode] = useState("")
-  const [d3jsCode,setD3jsCode] = useState("")
-  const [threejsCode,setThreejsCode] = useState("")
-  const [mermaidjsCode,setMermaidjsCode] = useState("")
+  const [p5jsCode,setp5jsCode] = useState("1")
+  const [d3jsCode,setD3jsCode] = useState("2")
+  const [threejsCode,setThreejsCode] = useState("3")
+  const [mermaidjsCode,setMermaidjsCode] = useState("4")
 
   
 
   const [mcqData,setMcqData]= useState([])
   const [viewMcq,setViewMcq] = useState(false)
   const[mcqLoading,setMcqLoading] = useState(false)
-  const router = useRouter();
 
   const [showApiKeyToggle, setShowApiKeyToggle] = useState(true);
   const [usingCompanyKey, setUsingCompanyKey] = useState(false);
-
-  // const getApiKey = () => {
-  //   const userApiKey = Cookies.get("apiKey");
-  //   if (userApiKey) {
-  //     setUsingCompanyKey(false);
-  //     return userApiKey;
-  //   } else {
-  //     setUsingCompanyKey(true);
-  //     return process.env.ANTHROPIC_API_KEY;
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   getApiKey();
-  // }, []);
+  const[noCodeInDatabase,setNoCodeInDatabase] = useState(false)
 
 
   // Memory cache object to store data
@@ -104,6 +88,7 @@ const Home = () => {
     if (key in memoryCache) {
       delete memoryCache[key];
     }
+    console.log(`Removed ${key} from memory cache`);
   }
 
   // Check key in cookie 
@@ -268,21 +253,23 @@ const Home = () => {
     switch (activeFormat) {
       case "p5js":
         codeToShow = cleanCode(p5jsCode);
-        console.log(p5jsCode.length)
-        {p5jsCode.length ===0 && fetchwikiDatawithai()}
+        console.log(p5jsCode.length,activeFormat)
+        {(p5jsCode.length ===0 ) && fetchwikiDatawithai()}
         break;
       case "d3js":
         codeToShow = cleanCode(d3jsCode);
-        {d3jsCode.length ===0 && fetchwikiDatawithai()}
+        {(d3jsCode.length ===0)&& fetchwikiDatawithai()}
+        console.log(d3jsCode.length,activeFormat)
         break;
       case "mermaidjs":
         codeToShow = cleanCode(mermaidjsCode);
-        console.log(mermaidjsCode.length)
-        {mermaidjsCode.length ===0 && fetchwikiDatawithai() }
+        console.log(mermaidjsCode.length,activeFormat)
+        {(mermaidjsCode.length ===0) && fetchwikiDatawithai() }
         break;
       case "threejs":
         codeToShow = cleanCode(threejsCode);
-        {threejsCode.length === 0 && fetchwikiDatawithai()}
+        {(threejsCode.length === 0) && fetchwikiDatawithai()}
+        console.log(threejsCode.length,activeFormat)
         break;
       default:
         codeToShow = "// Select a format to see the code.";
@@ -291,6 +278,37 @@ const Home = () => {
     setCodeOutput(codeToShow);
   }, [activeFormat, p5jsCode, d3jsCode, mermaidjsCode, threejsCode]);
   
+  useEffect(() => {
+  if(codeOutput.length >1 && activeFormat === "p5js") {
+    setSimulationActive(false);
+      setInterval(() => {
+        setSimulationActive(true);
+      }, 1000);
+    }
+      else if(codeOutput.length > 1 && activeFormat === "threejs") {  
+        setSimulationActive(false);
+        setInterval(() => {
+          setSimulationActive(true);
+        }, 1000);
+      }
+      else if(codeOutput.length > 1 && activeFormat === "d3js"){
+        setSimulationActive(false);
+        setInterval(() => {
+          setSimulationActive(true);
+        }, 1000);
+      }
+      else if(codeOutput.length > 1 && activeFormat === "mermaidjs"){
+        setSimulationActive(false);
+        setInterval(() => {
+          setSimulationActive(true);
+        }, 1000);
+      }
+
+    
+    else {
+      setSimulationActive(false);
+    }
+  }, [codeOutput]);
 
   const RemoveKey = ()=>{
     Cookies.remove("Summary")
@@ -298,6 +316,10 @@ const Home = () => {
     removeFromCache("d3jsCode")
     removeFromCache("mermaidjsCode")
     removeFromCache("threejsCode")
+    setp5jsCode("1")
+    setD3jsCode("2")
+    setMermaidjsCode("3")
+    setThreejsCode("4")
   }
 
   const fetchwikiDatawithai = async()=>{
@@ -436,8 +458,11 @@ const Home = () => {
         setIsProcessing(false)
       }
       else if(response.status === 404){
-        fetchwikiDatawithai()
-         setIsProcessing(false)
+       setp5jsCode("")
+        setD3jsCode("")
+        setMermaidjsCode("")
+        setThreejsCode("")
+        setIsProcessing(false)
       }
     } 
     catch(err){
@@ -547,11 +572,7 @@ const Home = () => {
      }
    };
  
- 
-  //Stop the play Button While changing  the formates 
- useEffect(()=>{
-  setSimulationActive(false)
- },[activeFormat])
+
 
 //  fetch the code when formatechanges 
 
@@ -567,52 +588,11 @@ useEffect(()=>{
 
 
 
-
-// useEffect(()=>{
-//   Cookies.set("Summary","Summary is not found")
-//   setInCache("p5jsCode","p5jsCode is not found")
-//   setInCache("d3jsCode","d3jsCode is not found")
-//   setInCache("mermaidjsCode","mermaidjsCode is not found")
-//   setInCache("threejsCode","threejsCode is not found")
-// },[])
-
-
 //  console.log(getFromCache("d3jsCode"))
 const SavedataonDatabase = async()=>{
   if(!wikipediaInput) return
-  
-  // Check and set p5jsCode
-  // if(hasKeyInCache("p5jsCode")){
-  //   setp5jsCode(getFromCache("p5jsCode"))
-  // } else {
-  //   setInCache("p5jsCode", "p5jsCode is not found")
-  //   setp5jsCode("p5jsCode is not found")
-  // }
-  
-  // Check and set d3jsCode
-  // if(hasKeyInCache("d3jsCode")){
-  //   setD3jsCode(getFromCache("d3jsCode"))
-  // } else {
-  //   setInCache("d3jsCode", "d3jsCode is not found")
-  //   setD3jsCode("d3jsCode is not found")
-  // }
-  
-  // Check and set mermaidjsCode
-  // if(hasKeyInCache("mermaidjsCode")){
-  //   setMermaidjsCode(getFromCache("mermaidjsCode"))
-  // } else {
-  //   setInCache("mermaidjsCode", "mermaidjsCode is not found")
-  //   setMermaidjsCode("mermaidjsCode is not found")
-  // }
-  
-  // Check and set threejsCode
-  // if(hasKeyInCache("threejsCode")){
-  //   setThreejsCode(getFromCache("threejsCode"))
-  // } else {
-  //   setInCache("threejsCode", "threejsCode is not found")
-  //   setThreejsCode("threejsCode is not found")
-  // }
 
+    showSnackbar("Saving...", "info")
   try{
     const response = await SaveDataToDb(
       wikipediaInput, 
@@ -785,9 +765,15 @@ const SavedataonDatabase = async()=>{
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <span>👨‍💻</span> Code Editor
         </h3>
+        <button 
+      className={`p-2 rounded-lg ${simulationActive ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}
+      onClick={() => setSimulationActive(!simulationActive)}
+    >
+      {simulationActive ? '⏹️' : '▶️'}
+    </button>
       </div>
       <div className="bg-gray-900 text-gray-300  rounded-lg font-mono text-md flex-1 flex overflow-auto ">
-        {isProcessing ? (
+        { isProcessing ? (
            <div className="flex flex-col items-center bg-black justify-center h-full w-full">
            <img 
                src="/Micro Simulating - MicroSim Learning Default Image.png" 
@@ -795,7 +781,7 @@ const SavedataonDatabase = async()=>{
                className="max-w-full max-h-full object-contain"
            />
        </div>
-        ) : codeOutput ? (
+        ) : (codeOutput.length > 1) ? (
           <pre className='p-4'>{codeOutput}</pre>
         ) : (
           <img 
@@ -940,10 +926,10 @@ const SavedataonDatabase = async()=>{
 
   <div className="flex gap-4 ml-auto sm:ml-0">
     <button 
-      className={`p-2 rounded-lg ${simulationActive ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}
-      onClick={() => setSimulationActive(!simulationActive)}
+      className="p-2 rounded-lg bg-violet-100 text-violet-600"
+      // onClick={() => setSimulationActive(!simulationActive)}
     >
-      {simulationActive ? '⏹️' : '▶️'}
+      Remix
     </button>
     <button 
       type="button" 
