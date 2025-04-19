@@ -283,7 +283,7 @@ const Home = () => {
     setSimulationActive(false);
       setInterval(() => {
         setSimulationActive(true);
-      }, 1000);
+      }, 2000);
     }
       else if(codeOutput.length > 1 && activeFormat === "threejs") {  
         setSimulationActive(false);
