@@ -228,7 +228,7 @@ const callClaudeAPI = async (prompt,apiKeyFormate, modelName = "claude-3-7-sonne
       },
       body: JSON.stringify({
         model: modelName,
-        max_tokens: 6000,
+        max_tokens: 4096,
         temperature: 0.2, // Lower temperature for more consistent outputs
         messages: [
           { role: "user", content: prompt }

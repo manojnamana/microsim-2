@@ -178,9 +178,10 @@ const extractKeyValuePairs = (text) => {
 /**
  * New prompt generator for code review and simulation fixes
  */
-const createVisualizationPrompt = (inputType, content, format, existingCode) => {
-  return `You are an expert on ${inputType} and ${format} visualizations. The current simulation didn't display anything. Please review the code and fix any errors for the topic being simulated.
-
+const createVisualizationPrompt = (promptex,content, format, existingCode) => {
+  
+return `
+${promptex}
 TOPIC CONTENT:
 ${content}
 
@@ -229,7 +230,7 @@ const callClaudeAPI = async (prompt,apiKeyFormate, modelName = "claude-3-7-sonne
       },
       body: JSON.stringify({
         model: modelName,
-        max_tokens: 6000,
+        max_tokens: 4096,
         temperature: 0.2, // Lower temperature for more consistent outputs
         messages: [
           { role: "user", content: prompt }
@@ -309,7 +310,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { source,input,format,apiKeyFormate,existingCode } = req.body;
+    const { source,input,format,apiKeyFormate=process.env.ANTHROPIC_API_KEY,existingCode,remixVersion } = req.body;
     
     if (!input || !existingCode || !source) {
       return res.status(400).json({ 
@@ -319,19 +320,36 @@ export default async function handler(req, res) {
     }
     
     const requestId = uuidv4(); // For tracking/debugging
-    console.log(`Request ${requestId} started for input link`);
+    console.log(`Request ${requestId} started for ${format}`);
+    let promptText = '';
+    if(remixVersion === "1"){
+      promptText = `You are an expert on ${format} visualizations. The current simulation didn't display anything. Please review the code and fix any errors for the topic being simulated.`
+      }
+      else if(remixVersion === "2"){
+        promptText = `You are an expert on ${format} visualizations. The ${existingCode}pretty interesting but the layout isn't quite right. Can you please adjust the boxes and labels to make sure they're laid out.`
+      } 
+      else if(remixVersion === "3"){
+        promptText = `You are an expert on ${format} visualizations.Can you put in inline controls to control key variables and to make this ${existingCode} interactive…`
+      }
     
-    // Extract content from the input link
-    const wikiData = await extractWikipediaContent(input);
-    const processedInput = wikiData.content;
-    const wikiTitle = wikiData.title;
     
+    let processedInput = input;
+    let wikiTitle = '';
+    
+    if (source === 'wikipedia' || source === 'image') {
+      const wikiData = await extractWikipediaContent(input);
+      processedInput = wikiData.content;
+      wikiTitle = wikiData.title;
+    }
+
+
+
     // Create prompt for code review and fixes
-    const prompt = createVisualizationPrompt(source, processedInput, format, existingCode);
+    const prompt = createVisualizationPrompt(promptText,processedInput, format, existingCode);
     
     // Generate response from Claude
     const startTime = Date.now();
-    const claudeResponse = await callClaudeAPI(prompt, processedInput);
+    const claudeResponse = await callClaudeAPI(prompt,apiKeyFormate);
     const endTime = Date.now();
     
     console.log(`Request ${requestId} completed in ${endTime - startTime}ms`);
@@ -349,7 +367,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       summary: claudeResponse.summary,
-      codeOutputs: { 'p5js': claudeResponse.code },
+      codeOutputs: { [format]: claudeResponse.code },
       concept: {
         name: claudeResponse.conceptName,
         principles: claudeResponse.keyPrinciples

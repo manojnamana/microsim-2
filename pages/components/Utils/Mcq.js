@@ -71,7 +71,7 @@ import React, { useState } from 'react'
 //     }
 // ]
 
-const Mcq = ({mcqOptions}) => {
+const Mcq = ({mcqOptions,mcqType}) => {
   const [selectedAnswers, setSelectedAnswers] = useState(Array(mcqOptions?.length).fill(null));
   const [showAnswers, setShowAnswers] = useState(false);
   const [score, setScore] = useState(0);
@@ -130,7 +130,7 @@ const Mcq = ({mcqOptions}) => {
     </Box> */}
 
       <h3 className="text-lg font-semibold flex items-center gap-2 w-full md:w-auto mb-4">
-                  <span>🗎</span> Multiple Choice Questions
+                  <span>🗎</span> Multiple Choice Questions {mcqType}
                 </h3>
       
       <Stack spacing={3}>

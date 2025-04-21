@@ -6,13 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 const createEnhancedMcqPrompt = (summary) => {
   return `You are an expert educational assessment creator specializing in creating high-quality multiple-choice questions for learning platforms. Your task is to create questions based on the following educational content.
 
-CONCEPT: Extract from the summary
+CONCEPT: Extract from the ${summary}
 
 KEY PRINCIPLES:
-Extract key principles from the summary
+Extract key principles from the ${summary}
 
 LEARNING OBJECTIVES:
-Create appropriate learning objectives based on the summary
+Create appropriate learning objectives based on the ${summary}
 
 SUMMARY:
 ${summary}
@@ -61,7 +61,7 @@ const callClaudeAPI = async (prompt,apiKeyFormate) => {
       },
       body: JSON.stringify({
         model: 'claude-3-opus-20240229',
-        max_tokens: 6000,
+        max_tokens: 4096,
         temperature: 0.3,
         messages: [
           { role: 'user', content: prompt }

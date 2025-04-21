@@ -71,7 +71,7 @@ import React, { useState } from 'react'
 //     }
 // ]
 
-const Mcq = ({mcqOptions}) => {
+const Mcq = ({mcqOptions,mcqType}) => {
   const [selectedAnswers, setSelectedAnswers] = useState(Array(mcqOptions?.length).fill(null));
   const [showAnswers, setShowAnswers] = useState(false);
   const [score, setScore] = useState(0);
@@ -129,7 +129,7 @@ const Mcq = ({mcqOptions}) => {
         <ArrowBackIosNew color='primary' /></IconButton>
     </Box> */}
       <Typography variant="h6"  gutterBottom sx={{ mb: 4 }}>
-        Multiple Choice Questions
+        Multiple Choice Questions {mcqType}
       </Typography>
       
       <Stack spacing={3}>

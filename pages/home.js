@@ -44,13 +44,15 @@ const Home = () => {
   const [d3jsCode,setD3jsCode] = useState("2")
   const [threejsCode,setThreejsCode] = useState("3")
   const [mermaidjsCode,setMermaidjsCode] = useState("4")
-  const [remixVersion, setRemixVersion] = useState(0);
+  const [remixVersion, setRemixVersion] = useState('0');
+
 
   
 
   const [mcqData,setMcqData]= useState([])
   const [viewMcq,setViewMcq] = useState(false)
   const[mcqLoading,setMcqLoading] = useState(false)
+  const[mcqType,setMcqType] = useState("")
 
   const [showApiKeyToggle, setShowApiKeyToggle] = useState(true);
   const [usingCompanyKey, setUsingCompanyKey] = useState(false);
@@ -185,9 +187,6 @@ const Home = () => {
   // Remix Default
 
   const fetchwikiDatawithai = async()=>{
-    if (remixVersion === 1) return fetchwikiDatawithaiRemix1();
-    if (remixVersion === 2) return fetchwikiDatawithaiRemix2();
-    if (remixVersion === 3) return fetchwikiDatawithaiRemix3();
     
     if (!wikipediaInput) return;
     if((showApiKeyToggle&&!GetApikey)){
@@ -210,7 +209,8 @@ const Home = () => {
           source: "wikipedia",
           input: wikipediaInput,
           format: activeFormat,
-          apiKeyFormate:GetApikey
+          apiKeyFormate:GetApikey,
+        
         }),
       });
 
@@ -383,6 +383,7 @@ const Home = () => {
             if (data.p5jsCode) {
               console.log('Successfully received p5.js code');
               setCodeOutput(data?.p5jsCode)
+              setWikipediaInput(data?.wikipedia_link)
               if(hasCookie("Summary")){
                console.log("Not need Summary")
                setSummary(GetSummary)
@@ -418,11 +419,67 @@ const Home = () => {
     setIsProcessing(false);
   };
 
+   
+  //  Fetching data Entred Prompt
+  const fetchData = async () => {
+    setSimulationActive(false)
+    if (!textInput) return;
+    if((showApiKeyToggle&&!GetApikey)){
+     showSnackbar('Please enter a valid API key', 'error');
+     return;
+  }
+
+    setIsProcessing(true);
+    setSummary("");
+    setError(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          source: "text",
+          input: textInput,
+          format: activeFormat,
+          apiKeyFormate:GetApikey,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to generate visualization");
+      }
+
+      if(hasCookie("Summary")){
+       console.log("Not need Summary")
+       setSummary(GetSummary)
+     }else{
+       Cookies.set('Summary', data.summary);
+       setSummary(data.summary);
+     }
+      setCodeOutput(data.codeOutputs?.[activeFormat] || "");
+      setConcept({
+        name: data.concept?.name || "",
+        principles: data.concept?.principles || [],
+      });
+      setInteractivityNotes(data.interactivityNotes || "");
+      setLearningObjectives(data.learningObjectives || "");
+    } catch (error) {
+      console.error("Error submitting text:", error);
+      setError(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
 
   // Generate MCQS
   const GeneraMcqs = async()=>{
     setSimulationActive(false)
-    setWikipediaInput("")
+
     if(!summary) return
     if((showApiKeyToggle&&!GetApikey)){
       showSnackbar('Please enter a valid API key', 'error');
@@ -430,13 +487,21 @@ const Home = () => {
    }
     setMcqLoading(true)
     try{
+      let summary = ""
+      if(mcqType === "Summary"){
+        summary = GetSummary
+      }else if(mcqType === "Code"){
+        summary = codeOutput
+      }else if(mcqType === "Simulator Viewer"){
+        summary = `${activeFormat} simulator viewer`
+      }
       const response = await fetch("/api/mcq", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          summary:GetSummary,
+          summary:summary,
           apiKeyFormate:GetApikey
         }),
       });
@@ -448,6 +513,7 @@ const Home = () => {
         setViewMcq(true)
         setMcqLoading(false)
         // router.push("/mcq")
+        showSnackbar("MCQ Generated Successfully", "success")
       }
 
       if (!data.success) {
@@ -462,61 +528,7 @@ const Home = () => {
     }
 
   }
- 
-  //  Fetching data Entred Prompt
-   const fetchData = async () => {
-     setSimulationActive(false)
-     if (!textInput) return;
-     if((showApiKeyToggle&&!GetApikey)){
-      showSnackbar('Please enter a valid API key', 'error');
-      return;
-   }
- 
-     setIsProcessing(true);
-     setSummary("");
-     setError(null);
- 
-     try {
-       const response = await fetch("/api/generate", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-         },
-         body: JSON.stringify({
-           source: "text",
-           input: textInput,
-           format: activeFormat,
-           apiKeyFormate:GetApikey,
-         }),
-       });
- 
-       const data = await response.json();
- 
-       if (!data.success) {
-         throw new Error(data.error || "Failed to generate visualization");
-       }
- 
-       if(hasCookie("Summary")){
-        console.log("Not need Summary")
-        setSummary(GetSummary)
-      }else{
-        Cookies.set('Summary', data.summary);
-        setSummary(data.summary);
-      }
-       setCodeOutput(data.codeOutputs?.[activeFormat] || "");
-       setConcept({
-         name: data.concept?.name || "",
-         principles: data.concept?.principles || [],
-       });
-       setInteractivityNotes(data.interactivityNotes || "");
-       setLearningObjectives(data.learningObjectives || "");
-     } catch (error) {
-       console.error("Error submitting text:", error);
-       setError(error.message);
-     } finally {
-       setIsProcessing(false);
-     }
-   };
+
  
 
 
@@ -525,9 +537,11 @@ const Home = () => {
 useEffect(()=>{
     if(activeTab === "Image"){
       fetchImageData()
+
     }
     else if(activeTab === "text"){
       fetchData()
+
     }
 },[activeFormat])
 
@@ -594,6 +608,14 @@ if(codeOutput.length >1 && activeFormat === "p5js") {
     setSimulationActive(false);
   }
 }, [codeOutput]);
+
+useEffect(()=>{
+  if(mcqType !== ""){
+    GeneraMcqs()
+  }
+
+},[mcqType])
+
 
 
 
@@ -664,7 +686,7 @@ const SavedataonDatabase = async()=>{
  
    const FormatButton = ({ id, label, icon, isActive }) => (
      <button
-       onClick={() => setActiveFormat(id)}
+       onClick={() => (setActiveFormat(id),setRemixVersion("0"))}
        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-md transition-colors ${
          isActive ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
        }`}
@@ -686,15 +708,21 @@ const SavedataonDatabase = async()=>{
   };
 
 
+// Remix
 
+  const fetchwikiDatawithaiRemix = async()=>{
 
-  // Remix1
-
-  const fetchwikiDatawithaiRemix1 = async()=>{
+      console.log(remixVersion)
     
-    if (!wikipediaInput) return;
+    if (!codeOutput){
+      showSnackbar("Please Generate Code First", 'error');
+      return;
+    }
     if((showApiKeyToggle&&!GetApikey)){
+      
+      setRemixVersion("0")
       showSnackbar('Please enter a valid API key', 'error');
+      setIsProcessing(false)
       return;
    }
    setSimulationActive(false)
@@ -704,17 +732,21 @@ const SavedataonDatabase = async()=>{
  
      try {
       setIsProcessing(true);
-      const response = await fetch("/api/remix1/wiki", {
+      let input = ""
+      if(wikipediaInput) input = wikipediaInput
+      else if(textInput) input = textInput
+      const response = await fetch("/api/remix", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          source: "wikipedia",
-          input: wikipediaInput,
+          source: activeFormat,
+          input: input,
           format: activeFormat,
           apiKeyFormate:GetApikey,
-          existingCode:codeOutput
+          existingCode:codeOutput,
+          remixVersion:remixVersion
         }),
       });
 
@@ -722,7 +754,7 @@ const SavedataonDatabase = async()=>{
 
       if (!data.success) {
         // throw new Error(data.error || "Failed to generate visualization");
-
+        
         if(data?.error?.includes("401")){
         showSnackbar("Please Give Valid Api Key", 'error');
       }
@@ -785,609 +817,16 @@ const SavedataonDatabase = async()=>{
       setError(error.message);
     } finally {
       setIsProcessing(false);
+      setRemixVersion("0")
     }
   }
-  const fetchDataRemix1 = async () => {
-    setSimulationActive(false)
-    if (!textInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-     showSnackbar('Please enter a valid API key', 'error');
-     return;
-  }
 
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-
-    try {
-      const response = await fetch("/api/remix1/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "text",
-          input: textInput,
-          format: activeFormat,
-          apiKeyFormate:GetApikey,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "Failed to generate visualization");
-      }
-
-      if(hasCookie("Summary")){
-       console.log("Not need Summary")
-       setSummary(GetSummary)
-     }else{
-       Cookies.set('Summary', data.summary);
-       setSummary(data.summary);
-     }
-      setCodeOutput(data.codeOutputs?.[activeFormat] || "");
-      setConcept({
-        name: data.concept?.name || "",
-        principles: data.concept?.principles || [],
-      });
-      setInteractivityNotes(data.interactivityNotes || "");
-      setLearningObjectives(data.learningObjectives || "");
-    } catch (error) {
-      console.error("Error submitting text:", error);
-      setError(error.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  const fetchImageDataRemix1 = async () => {
-    setSimulationActive(false)
-    setWikipediaInput("")
-    
-    // Validate we have an image file
-    if (!imagePreview) {
-      alert('Please select an image first');
-      showSnackbar('Please select an image first', 'error');
-      return;
-    }
-    if((showApiKeyToggle&&!GetApikey)){
-       showSnackbar('Please enter a valid API key', 'error');
-       return;
-    }
-    setIsProcessing(true);
-    setCodeOutput('');
-    setSummary("")
-    
-    try {
-      console.log('Submitting image to Claude API');
-      
-      // Send the base64 image data directly to the API
-      const response = await fetch('/api/remix1/image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          file: imagePreview,
-          formate:activeFormat,
-          apiKeyFormate:GetApikey // Base64 string from handleFileChange
-        }),
-      });
-      
-      if (response.ok) {
-        try {
-          const data = await response.json();
-          console.log('API response received:', data);
-          
-          
-          if (data.success) {
-            // The backend now parses the JSON and returns the code directly
-            if (data.p5jsCode) {
-              console.log('Successfully received p5.js code');
-              setCodeOutput(data?.p5jsCode)
-              if(hasCookie("Summary")){
-               console.log("Not need Summary")
-               setSummary(GetSummary)
-             }else{
-               Cookies.set('Summary', data?.summary);
-               setSummary(data?.summary);
-             }
-              showSnackbar('Image analysis completed successfully!', 'success');  
-            } else {
-              console.error('No code found in response:', data);
-              alert('No code was generated. Please try a different image.');
-            }
-          } else {
-            alert(`Error: ${data.message || 'Failed to process image'}`);
-            console.error('API Error:', data.message);
-            showSnackbar(data.message || 'Failed to process image', 'error');
-          }
-        } catch (parseError) {
-          console.error('Error parsing JSON from backend:', parseError);
-          alert('Error processing the API response. Please try again.');
-        }
-      } else {
-        console.error('API returned error status:', response.status);
-        alert(`Server error: ${response.statusText}`);
-        showSnackbar(`Server error: ${response.statusText}`, 'error');
-      }
-    } catch (error) {
-      alert('Failed to process image. Please check your connection.');
-      console.error('Error calling API:', error);
-      showSnackbar('Failed to process image. Please check your connection.', 'error');
-    }
-    
-    setIsProcessing(false);
-  };
-
-
-
-  // Remix2
-
-  const fetchwikiDatawithaiRemix2 = async()=>{
   
-    if (!wikipediaInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-      showSnackbar('Please enter a valid API key', 'error');
-      return;
-    }
-    setSimulationActive(false)
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-  
-      try {
-      setIsProcessing(true);
-      const response = await fetch("/api/remix2/wiki", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "wikipedia",
-          input: wikipediaInput,
-          format: activeFormat,
-          apiKeyFormate:GetApikey
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        // throw new Error(data.error || "Failed to generate visualization");
-
-        if(data?.error?.includes("401")){
-        showSnackbar("Please Give Valid Api Key", 'error');
-      }
-      else if(data?.error?.includes("400")){
-        showSnackbar("Low On Tokens Purchase Your Credits", 'error');
-
-      }
-    }
-      
-    if(data?.success){
-      setIsProcessing(false);
-    }
-      if(hasCookie("Summary")){
-        console.log("Not need Summary")
-        setSummary(GetSummary)
-      }else{
-        Cookies.set('Summary', data.summary);
-        setSummary(data.summary);
-      }
-      
-      // Set values in cache for all formats
-      if(data.codeOutputs?.p5js) {
-        setInCache("p5jsCode", data.codeOutputs.p5js || "");
-        if(activeFormat === "p5js") {
-          setp5jsCode(data.codeOutputs.p5js || "");
-        }
-      }
-      
-      if(data.codeOutputs?.d3js) {
-        setInCache("d3jsCode", data.codeOutputs.d3js || "");
-        if(activeFormat === "d3js") {
-          setD3jsCode(data.codeOutputs.d3js || "");
-        }
-      }
-      
-      if(data.codeOutputs?.mermaidjs) {
-        setInCache("mermaidjsCode", data.codeOutputs.mermaidjs || "");
-        if(activeFormat === "mermaidjs") {
-          setMermaidjsCode(data.codeOutputs.mermaidjs || "");
-        }
-      }
-      
-      if(data.codeOutputs?.threejs) {
-        setInCache("threejsCode", data.codeOutputs.threejs || "");
-        if(activeFormat === "threejs") {
-          setThreejsCode(data.codeOutputs.threejs || "");
-        }
-      }
-      
-      setCodeOutput(data.codeOutputs?.[activeFormat] || "");
-      setConcept({
-        name: data.concept?.name || "",
-        principles: data.concept?.principles || [],
-      });
-      setInteractivityNotes(data.interactivityNotes || "");
-      setLearningObjectives(data.learningObjectives || "");
-    } catch (error) {
-      console.error("Error submitting text:", error);
-      // showSnackbar(error.message, 'error');
-      setError(error.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  }
-  const fetchDataRemix2 = async () => {
-    setSimulationActive(false)
-    if (!textInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-     showSnackbar('Please enter a valid API key', 'error');
-     return;
-  }
-
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-
-    try {
-      const response = await fetch("/api/remix2/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "text",
-          input: textInput,
-          format: activeFormat,
-          apiKeyFormate:GetApikey,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "Failed to generate visualization");
-      }
-
-      if(hasCookie("Summary")){
-       console.log("Not need Summary")
-       setSummary(GetSummary)
-     }else{
-       Cookies.set('Summary', data.summary);
-       setSummary(data.summary);
-     }
-      setCodeOutput(data.codeOutputs?.[activeFormat] || "");
-      setConcept({
-        name: data.concept?.name || "",
-        principles: data.concept?.principles || [],
-      });
-      setInteractivityNotes(data.interactivityNotes || "");
-      setLearningObjectives(data.learningObjectives || "");
-    } catch (error) {
-      console.error("Error submitting text:", error);
-      setError(error.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  const fetchImageDataRemix2 = async () => {
-    setSimulationActive(false)
-    setWikipediaInput("")
-    
-    // Validate we have an image file
-    if (!imagePreview) {
-      alert('Please select an image first');
-      showSnackbar('Please select an image first', 'error');
-      return;
-    }
-    if((showApiKeyToggle&&!GetApikey)){
-       showSnackbar('Please enter a valid API key', 'error');
-       return;
-    }
-    setIsProcessing(true);
-    setCodeOutput('');
-    setSummary("")
-    
-    try {
-      console.log('Submitting image to Claude API');
-      
-      // Send the base64 image data directly to the API
-      const response = await fetch('/api/remix2/image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          file: imagePreview,
-          formate:activeFormat,
-          apiKeyFormate:GetApikey // Base64 string from handleFileChange
-        }),
-      });
-      
-      if (response.ok) {
-        try {
-          const data = await response.json();
-          console.log('API response received:', data);
-          
-          
-          if (data.success) {
-            // The backend now parses the JSON and returns the code directly
-            if (data.p5jsCode) {
-              console.log('Successfully received p5.js code');
-              setCodeOutput(data?.p5jsCode)
-              if(hasCookie("Summary")){
-               console.log("Not need Summary")
-               setSummary(GetSummary)
-             }else{
-               Cookies.set('Summary', data?.summary);
-               setSummary(data?.summary);
-             }
-              showSnackbar('Image analysis completed successfully!', 'success');  
-            } else {
-              console.error('No code found in response:', data);
-              alert('No code was generated. Please try a different image.');
-            }
-          } else {
-            alert(`Error: ${data.message || 'Failed to process image'}`);
-            console.error('API Error:', data.message);
-            showSnackbar(data.message || 'Failed to process image', 'error');
-          }
-        } catch (parseError) {
-          console.error('Error parsing JSON from backend:', parseError);
-          alert('Error processing the API response. Please try again.');
-        }
-      } else {
-        console.error('API returned error status:', response.status);
-        alert(`Server error: ${response.statusText}`);
-        showSnackbar(`Server error: ${response.statusText}`, 'error');
-      }
-    } catch (error) {
-      alert('Failed to process image. Please check your connection.');
-      console.error('Error calling API:', error);
-      showSnackbar('Failed to process image. Please check your connection.', 'error');
-    }
-    
-    setIsProcessing(false);
-  };
-
-
-
-  // Remix3
-
-  const fetchwikiDatawithaiRemix3 = async()=>{
-  
-    if (!wikipediaInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-      showSnackbar('Please enter a valid API key', 'error');
-      return;
-    }
-    setSimulationActive(false)
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-  
-      try {
-      setIsProcessing(true);
-      const response = await fetch("/api/remix3/wiki", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "wikipedia",
-          input: wikipediaInput,
-          format: activeFormat,
-          apiKeyFormate:GetApikey
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        // throw new Error(data.error || "Failed to generate visualization");
-
-        if(data?.error?.includes("401")){
-        showSnackbar("Please Give Valid Api Key", 'error');
-      }
-      else if(data?.error?.includes("400")){
-        showSnackbar("Low On Tokens Purchase Your Credits", 'error');
-
-      }
-    }
-      
-    if(data?.success){
-      setIsProcessing(false);
-    }
-      if(hasCookie("Summary")){
-        console.log("Not need Summary")
-        setSummary(GetSummary)
-      }else{
-        Cookies.set('Summary', data.summary);
-        setSummary(data.summary);
-      }
-      
-      // Set values in cache for all formats
-      if(data.codeOutputs?.p5js) {
-        setInCache("p5jsCode", data.codeOutputs.p5js || "");
-        if(activeFormat === "p5js") {
-          setp5jsCode(data.codeOutputs.p5js || "");
-        }
-      }
-      
-      if(data.codeOutputs?.d3js) {
-        setInCache("d3jsCode", data.codeOutputs.d3js || "");
-        if(activeFormat === "d3js") {
-          setD3jsCode(data.codeOutputs.d3js || "");
-        }
-      }
-      
-      if(data.codeOutputs?.mermaidjs) {
-        setInCache("mermaidjsCode", data.codeOutputs.mermaidjs || "");
-        if(activeFormat === "mermaidjs") {
-          setMermaidjsCode(data.codeOutputs.mermaidjs || "");
-        }
-      }
-      
-      if(data.codeOutputs?.threejs) {
-        setInCache("threejsCode", data.codeOutputs.threejs || "");
-        if(activeFormat === "threejs") {
-          setThreejsCode(data.codeOutputs.threejs || "");
-        }
-      }
-      
-      setCodeOutput(data.codeOutputs?.[activeFormat] || "");
-      setConcept({
-        name: data.concept?.name || "",
-        principles: data.concept?.principles || [],
-      });
-      setInteractivityNotes(data.interactivityNotes || "");
-      setLearningObjectives(data.learningObjectives || "");
-    } catch (error) {
-      console.error("Error submitting text:", error);
-      // showSnackbar(error.message, 'error');
-      setError(error.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  }
-  const fetchDataRemix3 = async () => {
-    setSimulationActive(false)
-    if (!textInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-     showSnackbar('Please enter a valid API key', 'error');
-     return;
-  }
-
-    setIsProcessing(true);
-    setSummary("");
-    setError(null);
-
-    try {
-      const response = await fetch("/api/remix3/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "text",
-          input: textInput,
-          format: activeFormat,
-          apiKeyFormate:GetApikey,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "Failed to generate visualization");
-      }
-
-      if(hasCookie("Summary")){
-       console.log("Not need Summary")
-       setSummary(GetSummary)
-     }else{
-       Cookies.set('Summary', data.summary);
-       setSummary(data.summary);
-     }
-      setCodeOutput(data.codeOutputs?.[activeFormat] || "");
-      setConcept({
-        name: data.concept?.name || "",
-        principles: data.concept?.principles || [],
-      });
-      setInteractivityNotes(data.interactivityNotes || "");
-      setLearningObjectives(data.learningObjectives || "");
-    } catch (error) {
-      console.error("Error submitting text:", error);
-      setError(error.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const fetchImageDataRemix3 = async () => {
-    setSimulationActive(false)
-    setWikipediaInput("")
-    
-    // Validate we have an image file
-    if (!imagePreview) {
-      alert('Please select an image first');
-      showSnackbar('Please select an image first', 'error');
-      return;
-    }
-    if((showApiKeyToggle&&!GetApikey)){
-       showSnackbar('Please enter a valid API key', 'error');
-       return;
-    }
-    setIsProcessing(true);
-    setCodeOutput('');
-    setSummary("")
-    
-    try {
-      console.log('Submitting image to Claude API');
-      
-      // Send the base64 image data directly to the API
-      const response = await fetch('/api/remix3/image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          file: imagePreview,
-          formate:activeFormat,
-          apiKeyFormate:GetApikey // Base64 string from handleFileChange
-        }),
-      });
-      
-      if (response.ok) {
-        try {
-          const data = await response.json();
-          console.log('API response received:', data);
-          
-          
-          if (data.success) {
-            // The backend now parses the JSON and returns the code directly
-            if (data.p5jsCode) {
-              console.log('Successfully received p5.js code');
-              setCodeOutput(data?.p5jsCode)
-              if(hasCookie("Summary")){
-               console.log("Not need Summary")
-               setSummary(GetSummary)
-             }else{
-               Cookies.set('Summary', data?.summary);
-               setSummary(data?.summary);
-             }
-              showSnackbar('Image analysis completed successfully!', 'success');  
-            } else {
-              console.error('No code found in response:', data);
-              alert('No code was generated. Please try a different image.');
-            }
-          } else {
-            alert(`Error: ${data.message || 'Failed to process image'}`);
-            console.error('API Error:', data.message);
-            showSnackbar(data.message || 'Failed to process image', 'error');
-          }
-        } catch (parseError) {
-          console.error('Error parsing JSON from backend:', parseError);
-          alert('Error processing the API response. Please try again.');
-        }
-      } else {
-        console.error('API returned error status:', response.status);
-        alert(`Server error: ${response.statusText}`);
-        showSnackbar(`Server error: ${response.statusText}`, 'error');
-      }
-    } catch (error) {
-      alert('Failed to process image. Please check your connection.');
-      console.error('Error calling API:', error);
-      showSnackbar('Failed to process image. Please check your connection.', 'error');
-    }
-    
-    setIsProcessing(false);
-  };
-
-
+useEffect(()=>{
+if(remixVersion !== "0"){
+  fetchwikiDatawithaiRemix()
+}
+},[remixVersion])
 
 
 
@@ -1504,7 +943,7 @@ const SavedataonDatabase = async()=>{
           <img 
             src="/Code - MicroSim Learning Default Image.png" 
             alt="MicroSim Default" 
-            className="max-w-full max-h-full object-contain bg-black"
+            className="w-full h-full object-contain bg-black"
           />
         )}
       </div>
@@ -1524,7 +963,7 @@ const SavedataonDatabase = async()=>{
                     <img 
                         src="/Simulation - MicroSim Learning Default Image.png" 
                         alt="Simulation Loading" 
-                        className="max-w-full max-h-full object-contain bg-black"
+                        className="w-full h-full object-contain bg-black"
                     />
                 ) : simulationActive ? (
           <div className="w-full h-full bg-black p-4 text-white">
@@ -1545,39 +984,29 @@ const SavedataonDatabase = async()=>{
     </Grid>
 
 </Grid>
+
+{/* Remix Prompt */}
 <Card elevation={2} sx={{ p: 2, my: 2 }}>
       <div className="flex flex-wrap gap-4 items-center">
         <button 
-          className={`p-2 rounded-lg ${remixVersion === 1 ? 'bg-violet-600 text-white' : 'bg-violet-100 text-violet-600'} hover:bg-violet-200 transition-colors`}
-          onClick={() => {
-            setRemixVersion(1);
-            if (activeTab === "wikipedia") fetchwikiDatawithaiRemix1();
-            else if (activeTab === "text") fetchDataRemix1();
-            else if (activeTab === "Image") fetchImageDataRemix1();
-          }}
+          className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
+          onClick={() => {setRemixVersion('1')}}
+          disabled={isProcessing}
         >
           Remix Prompt 1
         </button>
          
         <button 
-          className={`p-2 rounded-lg ${remixVersion === 2 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'} hover:bg-blue-200 transition-colors`}
-          onClick={() => {
-            setRemixVersion(2);
-            if (activeTab === "wikipedia") fetchwikiDatawithaiRemix2();
-            else if (activeTab === "text") fetchDataRemix2();
-            else if (activeTab === "Image") fetchImageDataRemix2();
-          }}
+          className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
+          onClick={() => {setRemixVersion('2')}}
+          disabled={isProcessing}
         >
           Remix Prompt 2
         </button> 
         <button 
-          className={`p-2 rounded-lg ${remixVersion === 3 ? 'bg-green-600 text-white' : 'bg-green-100 text-green-600'} hover:bg-green-200 transition-colors`}
-          onClick={() => {
-            setRemixVersion(3);
-            if (activeTab === "wikipedia") fetchwikiDatawithaiRemix3();
-            else if (activeTab === "text") fetchDataRemix3();
-            else if (activeTab === "Image") fetchImageDataRemix3();
-          }}
+          className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
+          onClick={() => {setRemixVersion('3')}}
+          disabled={isProcessing}
         >
           Remix Prompt 3
         </button>
@@ -1846,17 +1275,38 @@ const SavedataonDatabase = async()=>{
                 ) : (
                   <>
                   <p className="text-gray-700">{summary || "Summary will appear here"}</p>
-                  {showProFeatures && (
-                    <div className="mt-3 flex justify-end">
+                  {(showProFeatures && !mcqLoading) && (
+                    <div className="mt-3 flex justify-end items-center gap-2">
             <button
               className={`px-3 py-1 rounded-lg text-md  bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors`}
               style={{display:!summary ? "none" : "block"}}
               disabled={!summary || mcqLoading}
-              onClick={GeneraMcqs}
+                onClick={()=>setMcqType("Summary")}
             >
-              {mcqLoading ? "Generating..." : "Generate MCQ"}
+              {"Generate MCQ Based On Summary"}
+            </button>
+            <button
+              className={`px-3 py-1 rounded-lg text-md  bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors`}
+              style={{display:!summary ? "none" : "block"}}
+              disabled={!summary || mcqLoading}
+                onClick={()=>setMcqType("Code")}
+            >
+              {mcqLoading ? "Generating..." : "Generate MCQ Based On Code"}
+            </button>
+            <button
+              className={`px-3 py-1 rounded-lg text-md  bg-green-100 text-green-600 hover:bg-green-200 transition-colors`}
+              style={{display:!summary ? "none" : "block"}}
+              disabled={!summary || mcqLoading}
+              onClick={()=>setMcqType("Simulator Viewer")}
+            >
+              {mcqLoading ? "Generating..." : "Generate MCQ Based On Simulator Viewer"}
             </button>
           </div>
+                  )}
+                  {mcqLoading && (
+                    <div className="mt-3 flex justify-end items-center gap-2">
+                      <button className="bg-pink-200 text-pink-600 px-3 py-1 rounded-lg text-md" disabled>Generating...</button>
+                    </div>
                   )}
                   </>
                 )}
@@ -1870,7 +1320,7 @@ const SavedataonDatabase = async()=>{
 
   {mcqLoading ? (<div className="flex justify-center items-center h-full">
   <Skeleton variant='rectangular' height={100} width={"100%"} />
-  </div>):(<Mcq mcqOptions={mcqData}  />)}
+  </div>):(<Mcq mcqOptions={mcqData} mcqType={mcqType} />)}
 </>}
 
             

@@ -48,35 +48,43 @@ export default async function handler(req, res) {
           'x-api-key': apiKeyFormate,
           'anthropic-version': '2023-06-01'
         },
-        model: "claude-3-7-sonnet-20250219", // Using Claude's most capable model
-        max_tokens: 6000,
-        temperature: 0.2,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: promptText
-              },
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: "image/jpeg", // Adjust based on your image type
-                  data: base64Image.replace(/^data:image\/\w+;base64,/, "") // Remove the prefix if it exists
+        body: JSON.stringify({
+          model: "claude-3-7-sonnet-20250219",
+          max_tokens: 4096,
+          temperature: 0.2,
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: promptText
+                },
+                {
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: "image/jpeg",
+                    data: base64Image.replace(/^data:image\/\w+;base64,/, "")
+                  }
                 }
-              }
-            ]
-          }
-        ]
+              ]
+            }
+          ]
+        })
       });
+      
+      if (!response.ok) {
+        throw new Error(`Claude API error: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
       
       // Log the response received from Claude
       console.log('Received response from Claude AI');
       
       // Extract and log the analysis from the response
-      const analysis = response.content[0].text;
+      const analysis = responseData.content[0].text;
       console.log('Analysis received, length:', analysis.length);
       
       // Parse the JSON to validate it's complete
@@ -90,7 +98,7 @@ export default async function handler(req, res) {
           prompt: jsonObject.prompt,
           wikipedia_link: jsonObject.wikipedia_link,
           summary: jsonObject.summary,
-          p5jsCode: jsonObject.code // Return the code directly with a more generic name
+          p5jsCode: jsonObject.code
         });
       } catch (parseError) {
         console.error('Error parsing JSON from Claude:', parseError);
@@ -102,7 +110,11 @@ export default async function handler(req, res) {
     } catch (error) {
       // Log and handle any errors encountered during the request to Claude
       console.error('Error sending request to Claude AI:', error);
-      return res.status(500).json({ success: false, message: 'Error sending request to Claude AI' });
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error sending request to Claude AI',
+        error: error.message 
+      });
     }
   } else {
     res.setHeader('Allow', ['POST']);

@@ -336,7 +336,7 @@ const callClaudeAPIWithRobustParsing = async (prompt,apiKeyFormate, modelName = 
       },
       body: JSON.stringify({
         model: modelName,
-        max_tokens: 6000,
+        max_tokens: 4096,
         temperature: 0.2,
         messages: [
           { role: "user", content: prompt }
