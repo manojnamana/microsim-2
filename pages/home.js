@@ -44,6 +44,7 @@ const Home = () => {
   const [d3jsCode,setD3jsCode] = useState("2")
   const [threejsCode,setThreejsCode] = useState("3")
   const [mermaidjsCode,setMermaidjsCode] = useState("4")
+  const [remixVersion, setRemixVersion] = useState(0);
 
   
 
@@ -184,6 +185,9 @@ const Home = () => {
   // Remix Default
 
   const fetchwikiDatawithai = async()=>{
+    if (remixVersion === 1) return fetchwikiDatawithaiRemix1();
+    if (remixVersion === 2) return fetchwikiDatawithaiRemix2();
+    if (remixVersion === 3) return fetchwikiDatawithaiRemix3();
     
     if (!wikipediaInput) return;
     if((showApiKeyToggle&&!GetApikey)){
@@ -1541,6 +1545,44 @@ const SavedataonDatabase = async()=>{
     </Grid>
 
 </Grid>
+<Card elevation={2} sx={{ p: 2, my: 2 }}>
+      <div className="flex flex-wrap gap-4 items-center">
+        <button 
+          className={`p-2 rounded-lg ${remixVersion === 1 ? 'bg-violet-600 text-white' : 'bg-violet-100 text-violet-600'} hover:bg-violet-200 transition-colors`}
+          onClick={() => {
+            setRemixVersion(1);
+            if (activeTab === "wikipedia") fetchwikiDatawithaiRemix1();
+            else if (activeTab === "text") fetchDataRemix1();
+            else if (activeTab === "Image") fetchImageDataRemix1();
+          }}
+        >
+          Remix Prompt 1
+        </button>
+         
+        <button 
+          className={`p-2 rounded-lg ${remixVersion === 2 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'} hover:bg-blue-200 transition-colors`}
+          onClick={() => {
+            setRemixVersion(2);
+            if (activeTab === "wikipedia") fetchwikiDatawithaiRemix2();
+            else if (activeTab === "text") fetchDataRemix2();
+            else if (activeTab === "Image") fetchImageDataRemix2();
+          }}
+        >
+          Remix Prompt 2
+        </button> 
+        <button 
+          className={`p-2 rounded-lg ${remixVersion === 3 ? 'bg-green-600 text-white' : 'bg-green-100 text-green-600'} hover:bg-green-200 transition-colors`}
+          onClick={() => {
+            setRemixVersion(3);
+            if (activeTab === "wikipedia") fetchwikiDatawithaiRemix3();
+            else if (activeTab === "text") fetchDataRemix3();
+            else if (activeTab === "Image") fetchImageDataRemix3();
+          }}
+        >
+          Remix Prompt 3
+        </button>
+      </div>
+    </Card>
 
 
 {/* API KEY ADDED */}
@@ -1638,12 +1680,6 @@ const SavedataonDatabase = async()=>{
   </select>
 
   <div className="flex gap-4 ml-auto sm:ml-0">
-    <button 
-      className="p-2 rounded-lg bg-violet-100 text-violet-600"
-      // onClick={() => setSimulationActive(!simulationActive)}
-    >
-      Remix
-    </button>
     <button 
       type="button" 
       onClick={SavedataonDatabase} 
