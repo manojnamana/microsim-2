@@ -176,40 +176,41 @@ const extractKeyValuePairs = (text) => {
   return result;
 };
 /**
- * Enhanced prompt generator for visualization creation
+ * New prompt generator for code review and simulation fixes
  */
-const createVisualizationPrompt = (inputType, content, format) => {
-  return `You are an expert educational content creator specializing in converting concepts into interactive visualizations. Your task is to analyze the provided ${inputType} and generate code in ${format} that creates an effective educational visualization.
+const createVisualizationPrompt = (inputType, content, format, existingCode) => {
+  return `You are an expert on ${inputType} and ${format} visualizations. The current simulation didn't display anything. Please review the code and fix any errors for the topic being simulated.
 
-INPUT (${inputType}):
+TOPIC CONTENT:
 ${content}
 
-VISUALIZATION REQUIREMENTS:
-1. Create executable code that clearly demonstrates the main educational concept
-2. Focus on visual clarity and interactivity appropriate for learning
-3. Include appropriate annotations or labels in the visualization
-4. Ensure the code is complete and can run standalone in a browser environment
-5. Design the visualization to be engaging for high school or undergraduate students
+CURRENT CODE:
+${existingCode}
 
-FORMAT-SPECIFIC GUIDELINES:
+REQUIREMENTS:
+1. Analyze the code thoroughly and identify all issues preventing the simulation from displaying
+2. Fix any syntax errors, missing imports, or incorrect API usage
+3. Ensure the code follows best practices for ${format}
+4. Add proper error handling and debugging information
+5. Make sure the simulation clearly demonstrates the educational concept
+6. Include appropriate user interactions if missing
+7. Add comments explaining the fixes and improvements
+
+FORMAT-SPECIFIC REQUIREMENTS:
 ${getFormatGuidelines(format)}
 
-EDUCATIONAL GOALS:
-- The visualization should help students understand abstract concepts through visual representation
-- Interactive elements should allow exploration of key principles
-- The simulation should demonstrate cause-effect relationships where applicable
-- Complexity should be appropriate for educational purposes (not overly simplified or complex)
-
 OUTPUT FORMAT:
-Return your response as a valid JSON object with the following structure. Do not include any explanation or text outside this JSON structure:
+Return your response as a valid JSON object with the following structure:
 
 {
-  "code": "// Complete, executable code here",
-  "summary": "2-3 paragraph educational summary explaining the concept",
-  "conceptName": "The main concept name",
-  "keyPrinciples": ["Principle 1", "Principle 2", "Principle 3"],
-  "interactivityNotes": "Brief explanation of how users can interact with the simulation",
-  "learningObjectives": ["Learning objective 1", "Learning objective 2"]
+  "code": "// Fixed and working code here",
+  "summary": "Detailed explanation of the issues found and how they were fixed",
+  "conceptName": "The main concept being demonstrated",
+  "keyPrinciples": ["Key principle 1", "Key principle 2"],
+  "interactivityNotes": "How to interact with the simulation",
+  "learningObjectives": ["Learning objective 1", "Learning objective 2"],
+  "fixes": ["List of specific fixes made to the code"],
+  "debugInfo": "Any additional debugging information or tips"
 }`;
 };
 
@@ -308,35 +309,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { source, input, format = 'p5js',apiKeyFormate=process.env.ANTHROPIC_API_KEY } = req.body;
-   
+    const { source,input,format,apiKeyFormate,existingCode } = req.body;
     
-    if (!source || !input) {
+    if (!input || !existingCode || !source) {
       return res.status(400).json({ 
         success: false,
-        error: "Missing required parameters: source and input" 
+        error: "Missing required parameters: input and existingCode and source" 
       });
     }
     
     const requestId = uuidv4(); // For tracking/debugging
-    console.log(`Request ${requestId} started for ${source} with format ${format}`);
+    console.log(`Request ${requestId} started for input link`);
     
-    // Process input based on source
-    let processedInput = input;
-    let wikiTitle = '';
+    // Extract content from the input link
+    const wikiData = await extractWikipediaContent(input);
+    const processedInput = wikiData.content;
+    const wikiTitle = wikiData.title;
     
-    if (source === 'wikipedia') {
-      const wikiData = await extractWikipediaContent(input);
-      processedInput = wikiData.content;
-      wikiTitle = wikiData.title;
-    }
-    
-    // Create appropriate prompt based on source
-    const prompt = createVisualizationPrompt(source, processedInput, format);
+    // Create prompt for code review and fixes
+    const prompt = createVisualizationPrompt(source, processedInput, format, existingCode);
     
     // Generate response from Claude
     const startTime = Date.now();
-    const claudeResponse = await callClaudeAPI(prompt,apiKeyFormate);
+    const claudeResponse = await callClaudeAPI(prompt, processedInput);
     const endTime = Date.now();
     
     console.log(`Request ${requestId} completed in ${endTime - startTime}ms`);
@@ -354,13 +349,15 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       summary: claudeResponse.summary,
-      codeOutputs: { [format]: claudeResponse.code },
+      codeOutputs: { 'p5js': claudeResponse.code },
       concept: {
         name: claudeResponse.conceptName,
         principles: claudeResponse.keyPrinciples
       },
       interactivityNotes: claudeResponse.interactivityNotes || null,
-      learningObjectives: claudeResponse.learningObjectives || []
+      learningObjectives: claudeResponse.learningObjectives || [],
+      fixes: claudeResponse.fixes || [],
+      debugInfo: claudeResponse.debugInfo || null
     });
     
   } catch (error) {
