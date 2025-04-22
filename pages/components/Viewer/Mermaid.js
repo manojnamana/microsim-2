@@ -17,8 +17,21 @@ export default function MermaidEditor({ running, result }) {
         <title>Mermaid Editor</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
         <style>
-          body { margin: 0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-          #mermaid-container { width: 100%; max-width: 800px; display: flex; justify-content: center; align-items: center;}
+          body { 
+            margin: 0; 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+          }
+          #mermaid-container { 
+            width: 100%; 
+            max-width: 800px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+          }
         </style>
       </head>
       <body>
@@ -47,7 +60,7 @@ export default function MermaidEditor({ running, result }) {
   }
 
   return (
-    <div className="w-full min-h-[500px]  border border-gray-300 rounded">
+    <div className="w-full min-h-[500px] border border-gray-300 rounded">
       <iframe 
         key={iframeKey}
         width="100%" 
