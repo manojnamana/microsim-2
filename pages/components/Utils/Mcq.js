@@ -1,7 +1,8 @@
 import { ArrowBackIosNew, ArrowBackOutlined } from '@mui/icons-material';
 import { Box, Button, Card, Stack, Typography, Radio, RadioGroup, FormControlLabel, FormControl, Alert, Chip, IconButton } from '@mui/material'
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router'
 import React, { useState } from 'react'
+import { UpdateMcqContent } from "../../api/DbApi/remixApi"
 
 // const mcqOptions = [
 //     {
@@ -71,71 +72,82 @@ import React, { useState } from 'react'
 //     }
 // ]
 
-const Mcq = ({mcqOptions,mcqType}) => {
-  const [selectedAnswers, setSelectedAnswers] = useState(Array(mcqOptions?.length).fill(null));
-  const [showAnswers, setShowAnswers] = useState(false);
-  const [score, setScore] = useState(0);
-  const router = useRouter();
+const Mcq = ({mcqOptions, mcqType, wikiText}) => {
+  const [selectedAnswers, setSelectedAnswers] = useState(Array(mcqOptions?.length).fill(null))
+  const [showAnswers, setShowAnswers] = useState(false)
+  const [score, setScore] = useState(0)
+  const [saving, setSaving] = useState(false)
+  const router = useRouter()
+
   const handleOptionSelect = (questionIndex, optionIndex) => {
-    const newSelectedAnswers = [...selectedAnswers];
-    newSelectedAnswers[questionIndex] = optionIndex;
-    setSelectedAnswers(newSelectedAnswers);
-  };
+    const newSelectedAnswers = [...selectedAnswers]
+    newSelectedAnswers[questionIndex] = optionIndex
+    setSelectedAnswers(newSelectedAnswers)
+  }
 
   const handleSubmit = () => {
-    let newScore = 0;
+    let newScore = 0
     mcqOptions.forEach((mcq, index) => {
       if (selectedAnswers[index] === mcq.correctAnswer) {
-        newScore++;
+        newScore++
       }
-    });
-    setScore(newScore);
-    setShowAnswers(true);
-  };
+    })
+    setScore(newScore)
+    setShowAnswers(true)
+  }
 
   const calculatePercentage = () => {
-    return ((score / mcqOptions.length) * 100).toFixed(1);
-  };
+    return ((score / mcqOptions.length) * 100).toFixed(1)
+  }
 
   const getAnswerStatus = (questionIndex) => {
-    if (!showAnswers) return null;
-    const isCorrect = selectedAnswers[questionIndex] === mcqOptions[questionIndex].correctAnswer;
+    if (!showAnswers) return null
+    const isCorrect = selectedAnswers[questionIndex] === mcqOptions[questionIndex].correctAnswer
     return {
       status: isCorrect ? "Correct" : "Incorrect",
       color: isCorrect ? "success" : "error"
-    };
-  };
+    }
+  }
+
+  const handleSaveMcq = async () => {
+    if (!mcqOptions || !mcqType || !wikiText) return
+    
+    setSaving(true)
+    try {
+      const response = await UpdateMcqContent(wikiText, mcqType, mcqOptions)
+      
+      if (response?.status === 200) { 
+        alert('MCQ saved successfully!')
+      } else {
+        alert('Failed to save MCQ: ' + (response.data?.message || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Error saving MCQ:', error)
+      alert('Error saving MCQ')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if(!mcqOptions){
     return (
     <Stack justifyContent={"center"} alignItems={"center"} height={"100vh"}>
       <Box sx={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
         <Typography variant="h4" textAlign={"center"} gutterBottom sx={{ mb: 4 }}>No data found</Typography>
-        {/* <Button onClick={() => router.back()} variant="contained" color="primary">
-          <ArrowBackOutlined sx={{mr:1,color:"white"}}/>
-          Go Back</Button> */}
       </Box>
- 
     </Stack>
-  )
+    )
   }
 
   return (
-
-   
-    <Card elevation={2} sx={{  p: 2, my:2, }}>
-    {/* <Box>
-      <IconButton onClick={() => router.back()} variant='outlined'  sx={{position:"absolute",top:10,left:10,bgcolor:"whitesmoke"}}>
-        <ArrowBackIosNew color='primary' /></IconButton>
-    </Box> */}
-
+    <Card elevation={2} sx={{ p: 2, my:2 }}>
       <h3 className="text-lg font-semibold flex items-center gap-2 w-full md:w-auto mb-4">
-                  <span>🗎</span> Multiple Choice Questions {mcqType}
-                </h3>
+        <span>🗎</span> Multiple Choice Questions ({mcqType})
+      </h3>
       
       <Stack spacing={3}>
         {mcqOptions?.map((mcq, index) => {
-          const answerStatus = getAnswerStatus(index);
+          const answerStatus = getAnswerStatus(index)
           return (
             <Card key={index} elevation={2} sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -157,8 +169,8 @@ const Mcq = ({mcqOptions,mcqType}) => {
                   onChange={(e) => handleOptionSelect(index, parseInt(e.target.value))}
                 >
                   {mcq?.options.map((option, optIndex) => {
-                    const isCorrectAnswer = showAnswers && optIndex === mcq.correctAnswer;
-                    const isSelectedAnswer = showAnswers && optIndex === selectedAnswers[index];
+                    const isCorrectAnswer = showAnswers && optIndex === mcq.correctAnswer
+                    const isSelectedAnswer = showAnswers && optIndex === selectedAnswers[index]
                     
                     return (
                       <FormControlLabel
@@ -204,7 +216,7 @@ const Mcq = ({mcqOptions,mcqType}) => {
                           }
                         }}
                       />
-                    );
+                    )
                   })}
                 </RadioGroup>
               </FormControl>
@@ -221,11 +233,20 @@ const Mcq = ({mcqOptions,mcqType}) => {
                 </Alert>
               )}
             </Card>
-          );
+          )
         })}
       </Stack>
 
-      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'end', gap: 2 }}>
+      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleSaveMcq}
+          disabled={!mcqOptions || !mcqType || saving}
+        >
+          {saving ? 'Saving...' : 'Save MCQ'}
+        </Button>
+
         {!showAnswers ? (
           <Button
             variant="contained"
@@ -236,35 +257,21 @@ const Mcq = ({mcqOptions,mcqType}) => {
             Submit Answers
           </Button>
         ) : (
-          // <Box sx={{ textAlign: 'center' }}>
-          //   <Typography variant="h5" gutterBottom>
-          //     Your Score: {score}/{mcqOptions.length} ({calculatePercentage()}%)
-          //   </Typography>
-          //   <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          //     {score === mcqOptions.length 
-          //       ? "Perfect score! Well done!" 
-          //       : score >= mcqOptions.length * 0.7 
-          //       ? "Good job! Keep practicing!" 
-          //       : "Keep studying and try again!"}
-          //   </Typography>
-          //   </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                setSelectedAnswers(Array(mcqOptions.length).fill(null));
-                setShowAnswers(false);
-                setScore(0);
-              }}
-            >
-              Try Again
-            </Button>
-          
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setSelectedAnswers(Array(mcqOptions.length).fill(null))
+              setShowAnswers(false)
+              setScore(0)
+            }}
+          >
+            Try Again
+          </Button>
         )}
       </Box>
     </Card>
-    
-  );
-};
+  )
+}
 
-export default Mcq;
+export default Mcq

@@ -1405,14 +1405,19 @@ if(remixVersion !== "0"){
   </Card>
 
 {/* Mcq */}
-{viewMcq && !isProcessing &&< >
-
-
-
-  {mcqLoading ? (<div className="flex justify-center items-center h-full">
-  <Skeleton variant='rectangular' height={100} width={"100%"} />
-  </div>):(<Mcq mcqOptions={mcqData} mcqType={mcqType} />)}
-</>}
+{viewMcq && !isProcessing && (
+  mcqLoading ? (
+    <div className="flex justify-center items-center h-full">
+      <Skeleton variant='rectangular' height={100} width={"100%"} />
+    </div>
+  ) : (
+    <Mcq 
+      mcqOptions={mcqData} 
+      mcqType={mcqType}
+      wikiText={wikipediaInput.split('https://en.wikipedia.org/wiki/')[1]}
+    />
+  )
+)}
 
             
             <Snackbar
