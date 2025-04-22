@@ -1046,7 +1046,7 @@ if(remixVersion !== "0"){
 {/* Remix Prompt */}
 <Card elevation={2} sx={{ p: 2, my: 2 }}>
       <div className="flex flex-wrap gap-4 items-center">
-        <button 
+        {/* <button 
           className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
           onClick={() => {setRemixVersion('1');
             saveRemixVersion('1');
@@ -1073,7 +1073,7 @@ if(remixVersion !== "0"){
           disabled={isProcessing}
         >
           Remix Prompt 3
-        </button>
+        </button> */}
       </div>
     </Card>
 
@@ -1105,7 +1105,7 @@ if(remixVersion !== "0"){
               />
             </form>  */}
 
-{!showApiKeyToggle ? (
+{/* {!showApiKeyToggle ? (
   <>
     {usingCompanyKey && (
   <div className="text-base text-gray-600 flex flex-wrap items-center">
@@ -1143,11 +1143,39 @@ if(remixVersion !== "0"){
   Don't have an API key? <span className="text-blue-600 hover:underline font-medium">Use our MicroSim AI model</span>
 </div>
   </>
-)}
+)} */}
+ <button 
+          className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
+          onClick={() => {setRemixVersion('1');
+            saveRemixVersion('1');
+        }}
+          disabled={isProcessing}
+        >
+          Remix Prompt 1
+        </button>
+         
+        <button 
+          className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
+          onClick={() => {setRemixVersion('2');
+            saveRemixVersion('2');
+        }}
+          disabled={isProcessing}
+        >
+          Remix Prompt 2
+        </button> 
+        <button 
+          className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
+          onClick={() => {setRemixVersion('3');
+            saveRemixVersion('3');
+        }}
+          disabled={isProcessing}
+        >
+          Remix Prompt 3
+        </button>
 </div>
 
-<div className="w-full flex justify-end flex-col md:flex-row gap-4 items-center ">
-  {(!usingCompanyKey || showApiKeyToggle) && (
+<div className="w-full flex justify-end flex-col md:flex-row gap-6 items-center ">
+  {/* {(!usingCompanyKey || showApiKeyToggle) && (
     <select 
       onChange={(e) => setTextInput(e.target.value)} 
       className="w-full md:w-60 px-4 py-3 border-2 border-black rounded-lg bg-white" 
@@ -1156,7 +1184,7 @@ if(remixVersion !== "0"){
     >
       <option value="Claude-instant">Claude</option>
     </select>
-  )}
+  )} */}
 
 
   <select 
