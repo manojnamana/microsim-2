@@ -1144,6 +1144,7 @@ if(remixVersion !== "0"){
 </div>
   </>
 )} */}
+
  <button 
           className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
           onClick={() => {setRemixVersion('1');
