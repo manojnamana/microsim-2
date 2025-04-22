@@ -13,15 +13,35 @@ export const WikiDataFromDb = async(wikiText) =>{
 }
 
 
-export const SaveDataToDb = async(wikipedia_url,summary,mcq=null,mermaid_Code,p5_code,three_Code,d3_code) =>{
-    try{
-        const response = await axios.post(`${ApiUrl}wiki/save/`,{
-           wikipedia_url,summary,mcq,mermaid_Code,p5_code,three_Code,d3_code
-        })
-
-        return response
-
-    }catch(err){
-        return err.response
+export const SaveDataToDb = async(
+    wikipedia_url,
+    summary,
+    mcq = null,
+    mermaid_Code,
+    p5_code,
+    three_Code,
+    d3_code,
+    remix1 = null,
+    remix2 = null,
+    remix3 = null
+  ) => {
+    try {
+      const response = await axios.post(`${ApiUrl}wiki/save/`, {
+        wikipedia_url,
+        summary,
+        mcq,
+        mermaid_Code,
+        p5_code,
+        three_Code,
+        d3_code,
+        remix1,
+        remix2,
+        remix3
+      });
+      return response;
+    } catch(err) {
+      return err.response;
     }
-}
+  }
+
+ 

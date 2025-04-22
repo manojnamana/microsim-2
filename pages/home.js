@@ -14,6 +14,8 @@ import D3Editor from './components/Viewer/D3Editor';
 import MermaidEditor from './components/Viewer/Mermaid';
 import { SaveDataToDb, WikiDataFromDb } from './api/DbApi/wikiFromDb';
 import Mcq from './components/Utils/Mcq';
+import { UpdateRemixVersion } from '../pages/api/DbApi/remixApi';
+
 
 
 
@@ -626,6 +628,33 @@ const SavedataonDatabase = async()=>{
 
     showSnackbar("Saving...", "info")
   try{
+    const remixData = {};
+    if (remixVersion === "1") {
+      remixData.remix1 = {
+        mermaid_code: mermaidjsCode,
+        p5_code: p5jsCode,
+        three_code: threejsCode,
+        d3_code: d3jsCode,
+        summary: GetSummary
+      };
+    } else if (remixVersion === "2") {
+      remixData.remix2 = {
+        mermaid_code: mermaidjsCode,
+        p5_code: p5jsCode,
+        three_code: threejsCode,
+        d3_code: d3jsCode,
+        summary: GetSummary
+      };
+    } else if (remixVersion === "3") {
+      remixData.remix3 = {
+        mermaid_code: mermaidjsCode,
+        p5_code: p5jsCode,
+        three_code: threejsCode,
+        d3_code: d3jsCode,
+        summary: GetSummary
+      };
+    }
+
     const response = await SaveDataToDb(
       wikipediaInput, 
       GetSummary, 
@@ -633,8 +662,10 @@ const SavedataonDatabase = async()=>{
       mermaidjsCode,
       p5jsCode,
       threejsCode,
-      d3jsCode
-
+      d3jsCode,
+      remixData.remix1,
+      remixData.remix2,
+      remixData.remix3
     );
     
     if (response.status === 201){
@@ -649,6 +680,34 @@ const SavedataonDatabase = async()=>{
     showSnackbar("Error saving data: " + (error.message || "Unknown error"), "error")
   }
   }
+
+  const saveRemixVersion = async(version) => {
+    if (!wikipediaInput) {
+      showSnackbar('Please enter a Wikipedia URL first', 'error');
+      return;
+    }
+
+    const wikiText = wikipediaInput.split('https://en.wikipedia.org/wiki/')[1];
+    const remixData = {
+      mermaid_code: mermaidjsCode,
+      p5_code: p5jsCode,
+      three_code: threejsCode,
+      d3_code: d3jsCode,
+      summary: GetSummary
+    };
+    showSnackbar(`Saving Remix ${version}...`, 'info');
+    try {
+      const response = await UpdateRemixVersion(wikiText, `remix${version}`, remixData);
+    if (response.status === 200) {
+      showSnackbar(`Remix ${version} saved successfully!`);
+    } else {
+      showSnackbar(`Failed to save Remix ${version}: ${response.data?.message || 'Unknown error'}`, 'error');
+    }
+  } catch(error) {
+    console.error(error);
+    showSnackbar(`Error saving Remix ${version}: ${error.message || 'Unknown error'}`, 'error');
+  }
+};
    
    const addConsoleOutput = (message, isError = false) => {
      const timestamp = new Date().toLocaleTimeString();
@@ -820,7 +879,6 @@ const SavedataonDatabase = async()=>{
       setRemixVersion("0")
     }
   }
-
   
 useEffect(()=>{
 if(remixVersion !== "0"){
@@ -990,7 +1048,9 @@ if(remixVersion !== "0"){
       <div className="flex flex-wrap gap-4 items-center">
         <button 
           className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('1')}}
+          onClick={() => {setRemixVersion('1');
+            saveRemixVersion('1');
+        }}
           disabled={isProcessing}
         >
           Remix Prompt 1
@@ -998,14 +1058,18 @@ if(remixVersion !== "0"){
          
         <button 
           className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('2')}}
+          onClick={() => {setRemixVersion('2');
+            saveRemixVersion('2');
+        }}
           disabled={isProcessing}
         >
           Remix Prompt 2
         </button> 
         <button 
           className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('3')}}
+          onClick={() => {setRemixVersion('3');
+            saveRemixVersion('3');
+        }}
           disabled={isProcessing}
         >
           Remix Prompt 3
@@ -1237,8 +1301,6 @@ if(remixVersion !== "0"){
     </div>
   </div>
 )}
-
- 
 
  {/* Summary */}
  <Card elevation={2} sx={{p:2,mb:2}}>
