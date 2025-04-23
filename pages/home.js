@@ -990,7 +990,7 @@ if(remixVersion !== "0"){
         { isProcessing ? (
            <div className="flex flex-col items-center bg-black justify-center h-full w-full">
            <img 
-               src="/Micro Simulating - MicroSim Learning Default Image.png" 
+               src="/Spinning Arrow.gif" 
                alt="MicroSim Processing" 
                className="max-w-full max-h-full object-contain"
            />
