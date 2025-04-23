@@ -994,6 +994,7 @@ if(remixVersion !== "0"){
                alt="MicroSim Processing" 
                className="max-w-full max-h-full object-contain"
            />
+           
        </div>
         ) : (codeOutput.length > 1) ? (
           <pre className='p-4'>{codeOutput}</pre>
