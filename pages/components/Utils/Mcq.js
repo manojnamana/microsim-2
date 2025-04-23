@@ -1,77 +1,18 @@
 import { ArrowBackIosNew, ArrowBackOutlined } from '@mui/icons-material';
+<<<<<<< HEAD
 import { Box, Button, Card, Stack, Typography, Radio, RadioGroup, FormControlLabel, FormControl, Alert, Chip, IconButton } from '@mui/material'
+=======
+import { Box, Button, Card, Stack, Typography, Radio, RadioGroup, FormControlLabel, FormControl, Alert, Chip, IconButton, Snackbar } from '@mui/material'
+>>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { UpdateMcqContent } from "../../api/DbApi/remixApi"
 
-// const mcqOptions = [
-//     {
-//         "question": "What is the primary process that the interactive visualization demonstrates?",
-//         "options": [
-//             "Water cycle",
-//             "Carbon cycle",
-//             "Nitrogen cycle",
-//             "Rock cycle"
-//         ],
-//         "correctAnswer": 0,
-//         "explanation": "The visualization specifically demonstrates the water cycle, which circulates water throughout Earth.",
-//         "bloomsLevel": "Knowledge",
-//         "relatedLearningObjective": "Identify the fundamental Earth process depicted in the visualization"
-//     },
-//     {
-//         "question": "How does the water cycle circulate water throughout Earth?",
-//         "options": [
-//             "By keeping water in one static location",
-//             "Through a series of phase changes and water transport processes",
-//             "By converting water into other substances",
-//             "Through photosynthesis in plants"
-//         ],
-//         "correctAnswer": 1,
-//         "explanation": "The water cycle involves water changing phases (evaporation, condensation) and being transported around Earth through processes like precipitation, infiltration, and surface runoff.",
-//         "bloomsLevel": "Comprehension",
-//         "relatedLearningObjective": "Summarize how water is circulated throughout Earth by the water cycle"
-//     },
-//     {
-//         "question": "Based on the visualization, what would likely happen to water that falls as precipitation over land?",
-//         "options": [
-//             "It would all evaporate back into the atmosphere immediately",
-//             "It would be permanently stored in ice caps and glaciers",
-//             "Some could infiltrate into the ground or flow over the surface",
-//             "It would be converted into carbon dioxide"
-//         ],
-//         "correctAnswer": 2,
-//         "explanation": "When precipitation falls over land, some water infiltrates into the ground to be stored as groundwater, while some flows over the land surface as runoff into bodies of water. Some also evaporates back into the atmosphere.",
-//         "bloomsLevel": "Application",
-//         "relatedLearningObjective": "Analyze how water can take different pathways through Earth's systems after precipitating over land"
-//     },
-//     {
-//         "question": "If the visualization showed that evaporation was greatly reduced, what effect would this likely have on the water cycle?",
-//         "options": [
-//             "There would be more precipitation",
-//             "The water cycle would shut down completely",
-//             "There would be less water vapor in the atmosphere",
-//             "Surface water would all soak into groundwater"
-//         ],
-//         "correctAnswer": 2,
-//         "explanation": "With reduced evaporation, less water would be converted to water vapor and enter the atmosphere. This would decrease atmospheric moisture and likely reduce cloud formation and precipitation.",
-//         "bloomsLevel": "Analysis",
-//         "relatedLearningObjective": "Predict how changes to one part of the water cycle may impact other components of the cycle"
-//     },
-//     {
-//         "question": "Why is a visualization an effective tool for learning about the water cycle?",
-//         "options": [
-//             "It allows the learner to passively watch the process",
-//             "It focuses solely on mathematical equations",
-//             "It can dynamically show interconnected processes and pathways",
-//             "It is not useful since the water cycle is too simple"
-//         ],
-//         "correctAnswer": 2,
-//         "explanation": "An interactive visualization is valuable for learning about the water cycle because it can dynamically depict the interconnected processes and pathways in a way that static images or text alone cannot. Learners can see how water moves and changes throughout the cycle.",
-//         "bloomsLevel": "Evaluation",
-//         "relatedLearningObjective": "Evaluate the benefits of using an interactive visualization to learn about the water cycle"
-//     }
-// ]
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 const Mcq = ({mcqOptions, mcqType, wikiText}) => {
   const [selectedAnswers, setSelectedAnswers] = useState(Array(mcqOptions?.length).fill(null))
   const [showAnswers, setShowAnswers] = useState(false)
@@ -95,10 +36,27 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
     setScore(newScore)
     setShowAnswers(true)
   }
+<<<<<<< HEAD
+=======
+
+
+  const [snackbarMessage, setSnackbarMessage] = useState('')
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success')
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+>>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 
   const calculatePercentage = () => {
     return ((score / mcqOptions.length) * 100).toFixed(1)
   }
+<<<<<<< HEAD
+=======
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+>>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 
   const getAnswerStatus = (questionIndex) => {
     if (!showAnswers) return null
@@ -111,6 +69,7 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
 
   const handleSaveMcq = async () => {
     if (!mcqOptions || !mcqType || !wikiText) return
+<<<<<<< HEAD
     
     setSaving(true)
     try {
@@ -124,6 +83,22 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
     } catch (error) {
       console.error('Error saving MCQ:', error)
       alert('Error saving MCQ')
+=======
+    console.log(mcqType)
+    setSaving(true)
+    try {
+      showSnackbar("Saving MCQ...", "info")
+      const response = await UpdateMcqContent(wikiText, mcqType, mcqOptions)
+      
+      if (response?.status === 200) { 
+        showSnackbar('MCQ saved successfully!')
+      } else {
+        showSnackbar('Failed to save MCQ: ' + (response.data?.message || 'Unknown error'), 'error')
+      }
+    } catch (error) {
+      console.error('Error saving MCQ:', error)
+      showSnackbar('Error saving MCQ', 'error')
+>>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
     } finally {
       setSaving(false)
     }
@@ -270,8 +245,30 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
           </Button>
         )}
       </Box>
+<<<<<<< HEAD
     </Card>
   )
 }
 
+=======
+
+      <Snackbar
+  open={snackbarOpen}
+  autoHideDuration={6000}
+  onClose={() => setSnackbarOpen(false)}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+>
+  <Alert 
+    onClose={() => setSnackbarOpen(false)} 
+    severity={snackbarSeverity}
+    sx={{ width: '100%' }}
+  >
+    {snackbarMessage}
+  </Alert>
+            </Snackbar>
+    </Card>
+  )
+}
+
+>>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 export default Mcq
