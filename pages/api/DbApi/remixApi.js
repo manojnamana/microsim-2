@@ -19,18 +19,25 @@ export const UpdateRemixVersion = async(wikiText, remixField, remixData) => {
 
 export const UpdateMcqContent = async(wikiText, mcqType, mcqData) => {
     let sendObject = {}
+
     if(mcqType === "Summary"){
         sendObject = {
-            summary: mcqData
+            summary: mcqData,
+            code: [],
+            simulator: []
         }
     }
-    if(mcqType === "Code"){
+    else if(mcqType === "Code"){
         sendObject = {
-            code: mcqData
+            summary: [],
+            code: mcqData,
+            simulator: []
         }
     }
-    if(mcqType === "Simulater Viewer"){
+    else if(mcqType === "Simulator Viewer"){
         sendObject = {
+            summary: [],
+            code: [],
             simulator: mcqData
         }
     }

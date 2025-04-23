@@ -30,6 +30,7 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
     setShowAnswers(true)
   }
 
+
   const [snackbarMessage, setSnackbarMessage] = useState('')
   const [snackbarSeverity, setSnackbarSeverity] = useState('success')
   const [snackbarOpen, setSnackbarOpen] = useState(false)
@@ -55,9 +56,10 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
 
   const handleSaveMcq = async () => {
     if (!mcqOptions || !mcqType || !wikiText) return
-    
+    console.log(mcqType)
     setSaving(true)
     try {
+      showSnackbar("Saving MCQ...", "info")
       const response = await UpdateMcqContent(wikiText, mcqType, mcqOptions)
       
       if (response?.status === 200) { 

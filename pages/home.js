@@ -15,6 +15,7 @@ import MermaidEditor from './components/Viewer/Mermaid';
 import { SaveDataToDb, WikiDataFromDb } from './api/DbApi/wikiFromDb';
 import Mcq from './components/Utils/Mcq';
 import { UpdateRemixVersion } from '../pages/api/DbApi/remixApi';
+import { Magnifier } from 'react-image-magnifiers';
 
 
 
@@ -483,58 +484,7 @@ const Home = () => {
   };
 
 
-  // Generate MCQS
-  const GeneraMcqs = async()=>{
-    setSimulationActive(false)
 
-    if(!summary) return
-  //   if((showApiKeyToggle&&!GetApikey)){
-  //     showSnackbar('Please enter a valid API key', 'error');
-  //     return;
-  //  }
-    setMcqLoading(true)
-    try{
-      let summary = ""
-      if(mcqType === "Summary"){
-        summary = GetSummary
-      }else if(mcqType === "Code"){
-        summary = codeOutput
-      }else if(mcqType === "Simulator Viewer"){
-        summary = `${activeFormat} simulator viewer`
-      }
-      const response = await fetch("/api/mcq", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          summary:summary,
-          apiKeyFormate:GetApikey
-        }),
-      });
-
-      const data = await response.json();
-      console.log(data?.mcq?.questions)
-      if(response.status === 200){
-        setMcqData(data?.mcq?.questions)
-        setViewMcq(true)
-        setMcqLoading(false)
-        // router.push("/mcq")
-        showSnackbar("MCQ Generated Successfully", "success")
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || "Failed to generate visualization");
-      }
-      
-    }catch(error){
-      console.error("Error submitting text:", error);
-      setError(error.message);
-    }finally{
-      setMcqLoading(false)
-    }
-
-  }
 
  
 
@@ -558,24 +508,24 @@ useEffect(() => {
 
   switch (activeFormat) {
     case "p5js":
-      codeToShow = cleanCode(p5jsCode);
-      console.log(p5jsCode.length,activeFormat)
-      {(p5jsCode.length ===0 ) && fetchwikiDatawithai()}
+      codeToShow = cleanCode(p5jsCode || "");
+      console.log((p5jsCode || "").length, activeFormat);
+      {((p5jsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     case "d3js":
-      codeToShow = cleanCode(d3jsCode);
-      {(d3jsCode.length ===0)&& fetchwikiDatawithai()}
-      console.log(d3jsCode.length,activeFormat)
+      codeToShow = cleanCode(d3jsCode || "");
+      console.log((d3jsCode || "").length, activeFormat);
+      {((d3jsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     case "mermaidjs":
-      codeToShow = cleanCode(mermaidjsCode);
-      console.log(mermaidjsCode.length,activeFormat)
-      {(mermaidjsCode.length ===0) && fetchwikiDatawithai() }
+      codeToShow = cleanCode(mermaidjsCode || "");
+      console.log((mermaidjsCode || "").length, activeFormat);
+      {((mermaidjsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     case "threejs":
-      codeToShow = cleanCode(threejsCode);
-      {(threejsCode.length === 0) && fetchwikiDatawithai()}
-      console.log(threejsCode.length,activeFormat)
+      codeToShow = cleanCode(threejsCode || "");
+      console.log((threejsCode || "").length, activeFormat);
+      {((threejsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     default:
       codeToShow = "// Select a format to see the code.";
@@ -670,7 +620,6 @@ useEffect(()=>{
 
   }
 
-  console.log(remixp5jsCode)
   const saveRemixVersion = async(version) => {
     if (!wikipediaInput) {
       showSnackbar('Please enter a Wikipedia URL first', 'error');
@@ -679,7 +628,6 @@ useEffect(()=>{
 
     const wikiText = wikipediaInput.split('https://en.wikipedia.org/wiki/')[1];
     let remixData = {
-      summary: GetSummary,
       p5_code: remixp5jsCode,
       three_code: remixthreejsCode,
       d3_code: remixd3jsCode,
@@ -786,42 +734,46 @@ const fetchRemixWikiData = async(version)=>{
       const listData = [data];
       const remixData = listData[0][`remix${version}`];
 
-
+      
       
       
       if (remixData) {
         switch (activeFormat) {
           case "p5js":
-            if (remixData.p5_code.length > 1) {
-              setp5jsCode(remixData.p5_code);
-              setRemixP5jsCode(remixData.p5_code);
+            if (remixData[0].p5_code && remixData[0].p5_code !== "undefined") {
+              setp5jsCode(remixData[0].p5_code);
+              setRemixP5jsCode(remixData[0].p5_code);
+              setIsProcessing(false)
             } else {
               fetchwikiDatawithaiRemix(version);
               setIsProcessing(true)
             }
             break;
           case "threejs":
-            if (remixData.three_code.length > 1) {   
-            setThreejsCode(remixData.three_code || '');
-            setRemixThreejsCode(remixData.three_code || '');
+            if (remixData[0].three_code && remixData[0].three_code !== "undefined") {   
+            setThreejsCode(remixData[0].three_code || '');
+            setRemixThreejsCode(remixData[0].three_code || '');
+            setIsProcessing(false)
             } else {
               fetchwikiDatawithaiRemix(version);
               setIsProcessing(true)
             }
             break;
           case "mermaidjs":
-            if (remixData.mermaid_code.length > 1) {
-            setMermaidjsCode(remixData.mermaid_code || '');
-            setRemixMermaidjsCode(remixData.mermaid_code || '');
+            if (remixData[0].mermaid_code && remixData[0].mermaid_code !== "undefined") {
+              setMermaidjsCode(remixData[0].mermaid_code || '');
+              setRemixMermaidjsCode(remixData[0].mermaid_code || '');
+              setIsProcessing(false)
             } else{
               fetchwikiDatawithaiRemix(version);
               setIsProcessing(true)
             }
             break;
           case "d3js":
-            if (remixData.d3_code.length > 1) {
-            setD3jsCode(remixData.d3_code || '');
-            setRemixD3jsCode(remixData.d3_code || '');
+            if (remixData[0].d3_code && remixData[0].d3_code !== "undefined") {
+            setD3jsCode(remixData[0].d3_code || '');
+            setRemixD3jsCode(remixData[0].d3_code || '');
+            setIsProcessing(false)
             } else {  
               fetchwikiDatawithaiRemix(version);
               setIsProcessing(true)
@@ -833,7 +785,7 @@ const fetchRemixWikiData = async(version)=>{
         fetchwikiDatawithaiRemix(version)
         setIsProcessing(true)
       }
-      setIsProcessing(false);
+
     }
     else if(response.status === 404){
      fetchwikiDatawithaiRemix(version)
@@ -848,10 +800,10 @@ const fetchRemixWikiData = async(version)=>{
 }
 
   const fetchwikiDatawithaiRemix = async(version)=>{
-    setRemixD3jsCode("5")
-    setRemixMermaidjsCode("6")
-    setRemixP5jsCode("7")
-    setRemixThreejsCode("8")
+    setRemixD3jsCode("")
+    setRemixMermaidjsCode("")
+    setRemixP5jsCode("")
+    setRemixThreejsCode("")
 
     setIsProcessing(true)
     if (!codeOutput){
@@ -965,12 +917,115 @@ const fetchRemixWikiData = async(version)=>{
     }
   }
   
-// useEffect(()=>{
-// if(remixVersion !== "0"){
-//   fetchRemixWikiData()
-// }
-// },[remixVersion])
+  // Generate MCQS
 
+  const GeneraMcqs = async()=>{
+    setSimulationActive(false)
+    if(!summary) return
+    setMcqLoading(true)
+    if (!wikipediaInput) return;
+  let URL = wikipediaInput
+  if(!URL.includes("https://en.wikipedia.org/wiki/")){ 
+    showSnackbar('Please enter a valid Wikipedia URL', 'error');
+    // console.log("Please enter a valid Wikipedia URL")
+    return
+  } 
+
+  let wikitext = URL.split('https://en.wikipedia.org/wiki/')
+    try{
+
+
+    const response = await WikiDataFromDb(wikitext[1].toLowerCase());
+    const data = response?.data;
+    
+  
+    if (response.status === 200) {
+      const listData = [data];
+      const mcqContent = listData[0]?.mcq_content || {};
+      let remixData = null;
+      if(mcqType === "Simulator Viewer"){
+        remixData = mcqContent["simulator"] || null;
+      }
+      else{
+         remixData = mcqContent[mcqType?.toLowerCase()] || null;
+      }
+
+      console.log(remixData)
+      
+      if (remixData && remixData?.length > 0) {
+        setMcqData(remixData);
+        setViewMcq(true);
+        setMcqLoading(false);
+        showSnackbar("MCQ Generated Successfully", "success");
+      } else {
+        GeneraMcqswithAi();
+        setMcqLoading(true);
+      }
+    } else if (response.status === 404) {
+      GeneraMcqswithAi();
+      setMcqLoading(true);
+    }
+      
+    }
+    catch(error){
+      console.error("Error submitting text:", error);
+      setError(error.message);
+      setMcqLoading(false)
+    }
+  }
+  
+
+  const GeneraMcqswithAi = async()=>{
+    setSimulationActive(false)
+
+    if(!summary) return
+  //   if((showApiKeyToggle&&!GetApikey)){
+  //     showSnackbar('Please enter a valid API key', 'error');
+  //     return;
+  //  }
+    setMcqLoading(true)
+    try{
+      let summary = ""
+      if(mcqType === "Summary"){
+        summary = GetSummary
+      }else if(mcqType === "Code"){
+        summary = codeOutput
+      }else if(mcqType === "Simulator Viewer"){
+        summary = `${activeFormat} simulator viewer`
+      }
+      const response = await fetch("/api/mcq", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          summary:summary,
+          apiKeyFormate:GetApikey
+        }),
+      });
+
+      const data = await response.json();
+      console.log(data?.mcq?.questions)
+      if(response.status === 200){
+        setMcqData(data?.mcq?.questions)
+        setViewMcq(true)
+        setMcqLoading(false)
+        // router.push("/mcq")
+        showSnackbar("MCQ Generated Successfully", "success")
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to generate visualization");
+      }
+      
+    }catch(error){
+      console.error("Error submitting text:", error);
+      setError(error.message);
+    }finally{
+      setMcqLoading(false)
+    }
+
+  }
 
 
 
@@ -1353,10 +1408,24 @@ const fetchRemixWikiData = async(version)=>{
         <div className="border-2 border-dashed rounded-lg p-6 text-center">
           {imagePreview ? (
             <div className="space-y-4">
-              <img
-                src={imagePreview}
-                alt="Preview"
+              <Magnifier
+                imageSrc={imagePreview}
+                imageAlt="Preview"
+                mouseActivation="click"
+                touchActivation="tap"
+                dragToMove={true}
                 className="max-h-48 mx-auto rounded"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  cursor: 'zoom-in'
+                }}
+                magnifierSize="50%"
+                magnifierBorderSize={1}
+                magnifierBorderColor="#fff"
+                magnifierBackgroundColor="#fff"
+                magnifierShadowColor="rgba(0,0,0,0.2)"
+                magnifierShadowBlur={5}
               />
               <button
                 type="button"
