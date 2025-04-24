@@ -1350,7 +1350,6 @@ if(remixVersion !== "0"){
         } transition-colors flex items-center gap-1`}
       >
         {showProFeatures ? "Hide MCQs " : "Generate MCQs"}
-       
       </button>
     )}
  
