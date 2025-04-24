@@ -16,6 +16,7 @@ import { SaveDataToDb, WikiDataFromDb } from './api/DbApi/wikiFromDb';
 import Mcq from './components/Utils/Mcq';
 import { UpdateRemixVersion } from '../pages/api/DbApi/remixApi';
 import { Magnifier } from 'react-image-magnifiers';
+import Image from 'next/image';
 
 
 
@@ -1409,24 +1410,10 @@ const fetchRemixWikiData = async(version)=>{
         <div className="border-2 border-dashed rounded-lg p-6 text-center">
           {imagePreview ? (
             <div className="space-y-4">
-              <Magnifier
-                imageSrc={imagePreview}
-                imageAlt="Preview"
-                mouseActivation="click"
-                touchActivation="tap"
-                dragToMove={true}
+              <img
+                src={imagePreview}
+                alt="Preview"
                 className="max-h-48 mx-auto rounded"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  cursor: 'zoom-in'
-                }}
-                magnifierSize="50%"
-                magnifierBorderSize={1}
-                magnifierBorderColor="#fff"
-                magnifierBackgroundColor="#fff"
-                magnifierShadowColor="rgba(0,0,0,0.2)"
-                magnifierShadowBlur={5}
               />
               <button
                 type="button"
@@ -1484,21 +1471,18 @@ const fetchRemixWikiData = async(version)=>{
                 </h3>
 
                 {/* <span className="text-md">Console log</span> */}
-                <IconButton 
+                {summary && (
+      <button 
         onClick={() => setShowProFeatures(!showProFeatures)}
-        className="flex items-center gap-1"
-        disabled={!summary}
+        className={`px-3 py-1 rounded-lg text-md ${
+          showProFeatures 
+            ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
+            : 'bg-green-100 text-green-600 hover:bg-green-200'
+        } transition-colors flex items-center gap-1`}
       >
-        <ExpandCircleDownOutlinedIcon 
-          sx={{ 
-            fontSize: 20,
-            transform: showProFeatures ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s ease',
-            color:"black"
-          }} 
-          aria-label="Toggle pro features" 
-        />
-                </IconButton>
+        {showProFeatures ? "Hide MCQs " : "Generate MCQs"}
+      </button>
+    )}
  
  </div>
 <div className="bg-gray-100 mt-3 p-4 rounded-lg">
