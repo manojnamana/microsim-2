@@ -3,7 +3,7 @@ import Header from './components/Layout/Header';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
 import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import ExpandCircleDownOutlinedIcon from '@mui/icons-material/ExpandCircleDownOutlined';
+
 import SendIcon from '@mui/icons-material/Send';
 import imageCompression from 'browser-image-compression';
 import { Snackbar, Alert, TextField, Stack, Box, Card, IconButton, InputAdornment, OutlinedInput, Skeleton, Grid } from '@mui/material';

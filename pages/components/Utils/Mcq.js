@@ -1,18 +1,11 @@
 import { ArrowBackIosNew, ArrowBackOutlined } from '@mui/icons-material';
-<<<<<<< HEAD
-import { Box, Button, Card, Stack, Typography, Radio, RadioGroup, FormControlLabel, FormControl, Alert, Chip, IconButton } from '@mui/material'
-=======
 import { Box, Button, Card, Stack, Typography, Radio, RadioGroup, FormControlLabel, FormControl, Alert, Chip, IconButton, Snackbar } from '@mui/material'
->>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { UpdateMcqContent } from "../../api/DbApi/remixApi"
 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 const Mcq = ({mcqOptions, mcqType, wikiText}) => {
   const [selectedAnswers, setSelectedAnswers] = useState(Array(mcqOptions?.length).fill(null))
   const [showAnswers, setShowAnswers] = useState(false)
@@ -36,27 +29,21 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
     setScore(newScore)
     setShowAnswers(true)
   }
-<<<<<<< HEAD
-=======
 
 
   const [snackbarMessage, setSnackbarMessage] = useState('')
   const [snackbarSeverity, setSnackbarSeverity] = useState('success')
   const [snackbarOpen, setSnackbarOpen] = useState(false)
->>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 
   const calculatePercentage = () => {
     return ((score / mcqOptions.length) * 100).toFixed(1)
   }
-<<<<<<< HEAD
-=======
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
->>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 
   const getAnswerStatus = (questionIndex) => {
     if (!showAnswers) return null
@@ -69,21 +56,6 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
 
   const handleSaveMcq = async () => {
     if (!mcqOptions || !mcqType || !wikiText) return
-<<<<<<< HEAD
-    
-    setSaving(true)
-    try {
-      const response = await UpdateMcqContent(wikiText, mcqType, mcqOptions)
-      
-      if (response?.status === 200) { 
-        alert('MCQ saved successfully!')
-      } else {
-        alert('Failed to save MCQ: ' + (response.data?.message || 'Unknown error'))
-      }
-    } catch (error) {
-      console.error('Error saving MCQ:', error)
-      alert('Error saving MCQ')
-=======
     console.log(mcqType)
     setSaving(true)
     try {
@@ -98,7 +70,6 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
     } catch (error) {
       console.error('Error saving MCQ:', error)
       showSnackbar('Error saving MCQ', 'error')
->>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
     } finally {
       setSaving(false)
     }
@@ -245,12 +216,6 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
           </Button>
         )}
       </Box>
-<<<<<<< HEAD
-    </Card>
-  )
-}
-
-=======
 
       <Snackbar
   open={snackbarOpen}
@@ -270,5 +235,4 @@ const Mcq = ({mcqOptions, mcqType, wikiText}) => {
   )
 }
 
->>>>>>> 82b81eb3f46b3dfcc52165814c475a5e4799be98
 export default Mcq
