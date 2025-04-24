@@ -21,11 +21,8 @@ export const SaveDataToDb = async(
     p5_code,
     three_Code,
     d3_code,
-    remix1 = null,
-    remix2 = null,
-    remix3 = null,
-    mcqContent = null
-) => {
+
+  ) => {
     try {
       const response = await axios.post(`${ApiUrl}wiki/save/`, {
         wikipedia_url,
@@ -35,10 +32,6 @@ export const SaveDataToDb = async(
         p5_code,
         three_Code,
         d3_code,
-        remix1,
-        remix2,
-        remix3,
-        mcq_content: mcqContent
       });
       return response;
     } catch(err) {

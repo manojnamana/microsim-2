@@ -27,6 +27,7 @@
     "next": "^15.2.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-image-magnifiers": "^1.4.0",
     "react-phone-input-2": "^2.15.1",
     "react-router-dom": "^7.4.0",
     "react-toastify": "^11.0.5",

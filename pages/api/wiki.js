@@ -216,20 +216,26 @@ Return your response as a valid JSON object with the following structure. Do not
 /**
  * Makes a call to Claude API
  */
-const callClaudeAPI = async (prompt,apiKeyFormate, modelName = "claude-3-7-sonnet-20250219") => {
-  
+const callClaudeAPI = async (prompt, apiKey, modelName = "claude-3-7-sonnet-20250219", retryCount = 0) => {
+  const maxRetries = 3;
+  const retryDelay = 2000; // 2 seconds
+
   try {
+    if (!apiKey) {
+      throw new Error("API key is required");
+    }
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': `${apiKeyFormate}`,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: modelName,
         max_tokens: 4096,
-        temperature: 0.2, // Lower temperature for more consistent outputs
+        temperature: 0.2,
         messages: [
           { role: "user", content: prompt }
         ]
@@ -238,6 +244,14 @@ const callClaudeAPI = async (prompt,apiKeyFormate, modelName = "claude-3-7-sonne
     
     if (!response.ok) {
       const errorData = await response.json();
+      
+      // Check for overload error
+      if (response.status === 529 && retryCount < maxRetries) {
+        console.log(`API overloaded, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return callClaudeAPI(prompt, apiKey, modelName, retryCount + 1);
+      }
+      
       throw new Error(`Claude API error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
     
@@ -261,6 +275,13 @@ const callClaudeAPI = async (prompt,apiKeyFormate, modelName = "claude-3-7-sonne
     return parsedResponse;
   
   } catch (error) {
+    // Retry on network errors
+    if (retryCount < maxRetries && (error.message.includes('fetch') || error.message.includes('network'))) {
+      console.log(`Network error, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return callClaudeAPI(prompt, apiKey, modelName, retryCount + 1);
+    }
+    
     console.error("Error calling Claude API:", error);
     return { error: error.message };
   }
@@ -308,8 +329,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { source, input, format = 'p5js',apiKeyFormate=process.env.ANTHROPIC_API_KEY } = req.body;
-   
+    const { source, input, format = 'p5js', apiKey = process.env.ANTHROPIC_API_KEY } = req.body;
     
     if (!source || !input) {
       return res.status(400).json({ 
@@ -318,7 +338,14 @@ export default async function handler(req, res) {
       });
     }
     
-    const requestId = uuidv4(); // For tracking/debugging
+    if (!apiKey) {
+      return res.status(400).json({
+        success: false,
+        error: "API key is required"
+      });
+    }
+    
+    const requestId = uuidv4();
     console.log(`Request ${requestId} started for ${source} with format ${format}`);
     
     // Process input based on source
@@ -334,9 +361,9 @@ export default async function handler(req, res) {
     // Create appropriate prompt based on source
     const prompt = createVisualizationPrompt(source, processedInput, format);
     
-    // Generate response from Claude
+    // Generate response from Claude with retry logic
     const startTime = Date.now();
-    const claudeResponse = await callClaudeAPI(prompt,apiKeyFormate);
+    const claudeResponse = await callClaudeAPI(prompt, apiKey);
     const endTime = Date.now();
     
     console.log(`Request ${requestId} completed in ${endTime - startTime}ms`);
@@ -346,7 +373,9 @@ export default async function handler(req, res) {
       return res.status(500).json({
         success: false,
         error: `Error from Claude API: ${claudeResponse.error}`,
-        details: claudeResponse.rawResponse || null
+        details: claudeResponse.errorDetails || null,
+        rawResponse: claudeResponse.rawResponse ? 
+          claudeResponse.rawResponse.substring(0, 1000) + "..." : null
       });
     }
     

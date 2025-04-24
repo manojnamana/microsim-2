@@ -15,6 +15,7 @@ import MermaidEditor from './components/Viewer/Mermaid';
 import { SaveDataToDb, WikiDataFromDb } from './api/DbApi/wikiFromDb';
 import Mcq from './components/Utils/Mcq';
 import { UpdateRemixVersion } from '../pages/api/DbApi/remixApi';
+import { Magnifier } from 'react-image-magnifiers';
 
 
 
@@ -48,7 +49,10 @@ const Home = () => {
   const [mermaidjsCode,setMermaidjsCode] = useState("4")
   const [remixVersion, setRemixVersion] = useState('0');
 
-
+  const [remixp5jsCode,setRemixP5jsCode] = useState("1")
+  const [remixd3jsCode,setRemixD3jsCode] = useState("2")
+  const [remixthreejsCode,setRemixThreejsCode] = useState("3")
+  const [remixmermaidjsCode,setRemixMermaidjsCode] = useState("4")
   
 
   const [mcqData,setMcqData]= useState([])
@@ -186,15 +190,14 @@ const Home = () => {
   }
 
 
-  // Remix Default
 
   const fetchwikiDatawithai = async()=>{
-    
+    setRemixVersion("0")
     if (!wikipediaInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-      showSnackbar('Please enter a valid API key', 'error');
-      return;
-   }
+  //   if((showApiKeyToggle&&!GetApikey)){
+  //     showSnackbar('Please enter a valid API key', 'error');
+  //     return;
+  //  }
    setSimulationActive(false)
    setIsProcessing(true);
    setSummary("");
@@ -288,6 +291,7 @@ const Home = () => {
 
 // Fetching Data with Wikipedia Link from Database
    const fetchWikiData = async () => {
+    setRemixVersion("0")
     setSimulationActive(false)
     if (!wikipediaInput) return;
     let URL = wikipediaInput
@@ -341,6 +345,7 @@ const Home = () => {
 
   // Fetching Data with Image
   const fetchImageData = async () => {
+    setRemixVersion("0")
     setSimulationActive(false)
     setWikipediaInput("")
     
@@ -350,10 +355,10 @@ const Home = () => {
       showSnackbar('Please select an image first', 'error');
       return;
     }
-    if((showApiKeyToggle&&!GetApikey)){
-       showSnackbar('Please enter a valid API key', 'error');
-       return;
-    }
+    // if((showApiKeyToggle&&!GetApikey)){
+    //    showSnackbar('Please enter a valid API key', 'error');
+    //    return;
+    // }
     setIsProcessing(true);
     setCodeOutput('');
     setSummary("")
@@ -424,12 +429,13 @@ const Home = () => {
    
   //  Fetching data Entred Prompt
   const fetchData = async () => {
+    setRemixVersion("0")
     setSimulationActive(false)
     if (!textInput) return;
-    if((showApiKeyToggle&&!GetApikey)){
-     showSnackbar('Please enter a valid API key', 'error');
-     return;
-  }
+  //   if((showApiKeyToggle&&!GetApikey)){
+  //    showSnackbar('Please enter a valid API key', 'error');
+  //    return;
+  // }
 
     setIsProcessing(true);
     setSummary("");
@@ -478,58 +484,7 @@ const Home = () => {
   };
 
 
-  // Generate MCQS
-  const GeneraMcqs = async()=>{
-    setSimulationActive(false)
 
-    if(!summary) return
-    if((showApiKeyToggle&&!GetApikey)){
-      showSnackbar('Please enter a valid API key', 'error');
-      return;
-   }
-    setMcqLoading(true)
-    try{
-      let summary = ""
-      if(mcqType === "Summary"){
-        summary = GetSummary
-      }else if(mcqType === "Code"){
-        summary = codeOutput
-      }else if(mcqType === "Simulator Viewer"){
-        summary = `${activeFormat} simulator viewer`
-      }
-      const response = await fetch("/api/mcq", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          summary:summary,
-          apiKeyFormate:GetApikey
-        }),
-      });
-
-      const data = await response.json();
-      console.log(data?.mcq?.questions)
-      if(response.status === 200){
-        setMcqData(data?.mcq?.questions)
-        setViewMcq(true)
-        setMcqLoading(false)
-        // router.push("/mcq")
-        showSnackbar("MCQ Generated Successfully", "success")
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || "Failed to generate visualization");
-      }
-      
-    }catch(error){
-      console.error("Error submitting text:", error);
-      setError(error.message);
-    }finally{
-      setMcqLoading(false)
-    }
-
-  }
 
  
 
@@ -553,24 +508,24 @@ useEffect(() => {
 
   switch (activeFormat) {
     case "p5js":
-      codeToShow = cleanCode(p5jsCode);
-      console.log(p5jsCode.length,activeFormat)
-      {(p5jsCode.length ===0 ) && fetchwikiDatawithai()}
+      codeToShow = cleanCode(p5jsCode || "");
+      console.log((p5jsCode || "").length, activeFormat);
+      {((p5jsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     case "d3js":
-      codeToShow = cleanCode(d3jsCode);
-      {(d3jsCode.length ===0)&& fetchwikiDatawithai()}
-      console.log(d3jsCode.length,activeFormat)
+      codeToShow = cleanCode(d3jsCode || "");
+      console.log((d3jsCode || "").length, activeFormat);
+      {((d3jsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     case "mermaidjs":
-      codeToShow = cleanCode(mermaidjsCode);
-      console.log(mermaidjsCode.length,activeFormat)
-      {(mermaidjsCode.length ===0) && fetchwikiDatawithai() }
+      codeToShow = cleanCode(mermaidjsCode || "");
+      console.log((mermaidjsCode || "").length, activeFormat);
+      {((mermaidjsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     case "threejs":
-      codeToShow = cleanCode(threejsCode);
-      {(threejsCode.length === 0) && fetchwikiDatawithai()}
-      console.log(threejsCode.length,activeFormat)
+      codeToShow = cleanCode(threejsCode || "");
+      console.log((threejsCode || "").length, activeFormat);
+      {((threejsCode || "").length === 0) && fetchwikiDatawithai()}
       break;
     default:
       codeToShow = "// Select a format to see the code.";
@@ -622,38 +577,24 @@ useEffect(()=>{
 
 
 
-//  console.log(getFromCache("d3jsCode"))
-const SavedataonDatabase = async()=>{
-  if(!wikipediaInput) return
+// Saving Data
+  const SavedataonDatabase = ()=>{
+
+    if(remixVersion !== "0"){
+      saveRemixVersion(remixVersion)
+    }
+    else{
+      saveDatingIntoDatabase()
+    }
+
+  }
+
+  const saveDatingIntoDatabase = async()=>{
+    if(!wikipediaInput) return
 
     showSnackbar("Saving...", "info")
   try{
-    const remixData = {};
-    if (remixVersion === "1") {
-      remixData.remix1 = {
-        mermaid_code: mermaidjsCode,
-        p5_code: p5jsCode,
-        three_code: threejsCode,
-        d3_code: d3jsCode,
-        summary: GetSummary
-      };
-    } else if (remixVersion === "2") {
-      remixData.remix2 = {
-        mermaid_code: mermaidjsCode,
-        p5_code: p5jsCode,
-        three_code: threejsCode,
-        d3_code: d3jsCode,
-        summary: GetSummary
-      };
-    } else if (remixVersion === "3") {
-      remixData.remix3 = {
-        mermaid_code: mermaidjsCode,
-        p5_code: p5jsCode,
-        three_code: threejsCode,
-        d3_code: d3jsCode,
-        summary: GetSummary
-      };
-    }
+    
 
     const response = await SaveDataToDb(
       wikipediaInput, 
@@ -663,9 +604,6 @@ const SavedataonDatabase = async()=>{
       p5jsCode,
       threejsCode,
       d3jsCode,
-      remixData.remix1,
-      remixData.remix2,
-      remixData.remix3
     );
     
     if (response.status === 201){
@@ -679,6 +617,7 @@ const SavedataonDatabase = async()=>{
     console.error(error)
     showSnackbar("Error saving data: " + (error.message || "Unknown error"), "error")
   }
+
   }
 
   const saveRemixVersion = async(version) => {
@@ -688,26 +627,28 @@ const SavedataonDatabase = async()=>{
     }
 
     const wikiText = wikipediaInput.split('https://en.wikipedia.org/wiki/')[1];
-    const remixData = {
-      mermaid_code: mermaidjsCode,
-      p5_code: p5jsCode,
-      three_code: threejsCode,
-      d3_code: d3jsCode,
-      summary: GetSummary
+    let remixData = {
+      p5_code: remixp5jsCode,
+      three_code: remixthreejsCode,
+      d3_code: remixd3jsCode,
+      mermaid_code: remixmermaidjsCode
     };
-    showSnackbar(`Saving Remix ${version}...`, 'info');
+
+    showSnackbar(`Saving Remix ${remixVersion}...`, 'info');
     try {
-      const response = await UpdateRemixVersion(wikiText, `remix${version}`, remixData);
-    if (response.status === 200) {
-      showSnackbar(`Remix ${version} saved successfully!`);
-    } else {
-      showSnackbar(`Failed to save Remix ${version}: ${response.data?.message || 'Unknown error'}`, 'error');
+      const response = await UpdateRemixVersion(wikiText, `remix${remixVersion}`, remixData);
+      if (response.status === 200) {
+        showSnackbar(`Remix ${remixVersion} saved successfully!`);
+      } else {
+        showSnackbar(`Failed to save Remix ${remixVersion}: ${response.data?.message || 'Unknown error'}`, 'error');
+      }
+    } catch(error) {
+      console.error(error);
+      showSnackbar(`Error saving Remix ${remixVersion}: ${error.message || 'Unknown error'}`, 'error');
     }
-  } catch(error) {
-    console.error(error);
-    showSnackbar(`Error saving Remix ${version}: ${error.message || 'Unknown error'}`, 'error');
-  }
-};
+  };
+
+
    
    const addConsoleOutput = (message, isError = false) => {
      const timestamp = new Date().toLocaleTimeString();
@@ -768,22 +709,114 @@ const SavedataonDatabase = async()=>{
 
 
 // Remix
+const fetchRemixWikiData = async(version)=>{
+  setRemixVersion(version)
+  
+  setSimulationActive(false)
+  if (!wikipediaInput) return;
+  let URL = wikipediaInput
+  if(!URL.includes("https://en.wikipedia.org/wiki/")){ 
+    showSnackbar('Please enter a valid Wikipedia URL', 'error');
+    // console.log("Please enter a valid Wikipedia URL")
+    return
+  } 
 
-  const fetchwikiDatawithaiRemix = async()=>{
+  let wikitext = URL.split('https://en.wikipedia.org/wiki/')
+  
+  try {
+    setIsProcessing(true);
 
-      console.log(remixVersion)
+    const response = await WikiDataFromDb(wikitext[1].toLowerCase());
+    const data = response?.data;
     
+  
+    if (response.status === 200) {
+      const listData = [data];
+      const remixData = listData[0][`remix${version}`];
+
+      
+      
+      
+      if (remixData) {
+        switch (activeFormat) {
+          case "p5js":
+            if (remixData[0].p5_code && remixData[0].p5_code !== "undefined") {
+              setp5jsCode(remixData[0].p5_code);
+              setRemixP5jsCode(remixData[0].p5_code);
+              setIsProcessing(false)
+            } else {
+              fetchwikiDatawithaiRemix(version);
+              setIsProcessing(true)
+            }
+            break;
+          case "threejs":
+            if (remixData[0].three_code && remixData[0].three_code !== "undefined") {   
+            setThreejsCode(remixData[0].three_code || '');
+            setRemixThreejsCode(remixData[0].three_code || '');
+            setIsProcessing(false)
+            } else {
+              fetchwikiDatawithaiRemix(version);
+              setIsProcessing(true)
+            }
+            break;
+          case "mermaidjs":
+            if (remixData[0].mermaid_code && remixData[0].mermaid_code !== "undefined") {
+              setMermaidjsCode(remixData[0].mermaid_code || '');
+              setRemixMermaidjsCode(remixData[0].mermaid_code || '');
+              setIsProcessing(false)
+            } else{
+              fetchwikiDatawithaiRemix(version);
+              setIsProcessing(true)
+            }
+            break;
+          case "d3js":
+            if (remixData[0].d3_code && remixData[0].d3_code !== "undefined") {
+            setD3jsCode(remixData[0].d3_code || '');
+            setRemixD3jsCode(remixData[0].d3_code || '');
+            setIsProcessing(false)
+            } else {  
+              fetchwikiDatawithaiRemix(version);
+              setIsProcessing(true)
+            } 
+            break;
+        }
+      }
+      else{
+        fetchwikiDatawithaiRemix(version)
+        setIsProcessing(true)
+      }
+
+    }
+    else if(response.status === 404){
+     fetchwikiDatawithaiRemix(version)
+     setIsProcessing(true)
+    }
+  } 
+  catch(err){
+    console.error("Error submitting text:", err);
+  //  setError(error.details);
+  }
+
+}
+
+  const fetchwikiDatawithaiRemix = async(version)=>{
+    setRemixD3jsCode("")
+    setRemixMermaidjsCode("")
+    setRemixP5jsCode("")
+    setRemixThreejsCode("")
+
+    setIsProcessing(true)
     if (!codeOutput){
       showSnackbar("Please Generate Code First", 'error');
       return;
     }
-    if((showApiKeyToggle&&!GetApikey)){
+  //   if((showApiKeyToggle&&!GetApikey)){
       
-      setRemixVersion("0")
-      showSnackbar('Please enter a valid API key', 'error');
-      setIsProcessing(false)
-      return;
-   }
+  //     setRemixVersion("0")
+  //     showSnackbar('Please enter a valid API key', 'error');
+  //     setIsProcessing(false)
+  //     return;
+  //  }
    setSimulationActive(false)
    setIsProcessing(true);
    setSummary("");
@@ -805,7 +838,7 @@ const SavedataonDatabase = async()=>{
           format: activeFormat,
           apiKeyFormate:GetApikey,
           existingCode:codeOutput,
-          remixVersion:remixVersion
+          remixVersion:version
         }),
       });
 
@@ -839,6 +872,7 @@ const SavedataonDatabase = async()=>{
         setInCache("p5jsCode", data.codeOutputs.p5js || "");
         if(activeFormat === "p5js") {
           setp5jsCode(data.codeOutputs.p5js || "");
+          setRemixP5jsCode(data.codeOutputs.p5js)
         }
       }
       
@@ -846,6 +880,7 @@ const SavedataonDatabase = async()=>{
         setInCache("d3jsCode", data.codeOutputs.d3js || "");
         if(activeFormat === "d3js") {
           setD3jsCode(data.codeOutputs.d3js || "");
+          setRemixD3jsCode(data.codeOutput.d3js)
         }
       }
       
@@ -853,6 +888,7 @@ const SavedataonDatabase = async()=>{
         setInCache("mermaidjsCode", data.codeOutputs.mermaidjs || "");
         if(activeFormat === "mermaidjs") {
           setMermaidjsCode(data.codeOutputs.mermaidjs || "");
+          setRemixMermaidjsCode(data.codeOutputs.mermaidjs)
         }
       }
       
@@ -860,6 +896,7 @@ const SavedataonDatabase = async()=>{
         setInCache("threejsCode", data.codeOutputs.threejs || "");
         if(activeFormat === "threejs") {
           setThreejsCode(data.codeOutputs.threejs || "");
+          setRemixThreejsCode(data.codeOutputs.threejs)
         }
       }
       
@@ -876,15 +913,120 @@ const SavedataonDatabase = async()=>{
       setError(error.message);
     } finally {
       setIsProcessing(false);
-      setRemixVersion("0")
+
     }
   }
   
-useEffect(()=>{
-if(remixVersion !== "0"){
-  fetchwikiDatawithaiRemix()
-}
-},[remixVersion])
+  // Generate MCQS
+
+  const GeneraMcqs = async()=>{
+    setSimulationActive(false)
+    if(!summary) return
+    setMcqLoading(true)
+    if (!wikipediaInput) return;
+  let URL = wikipediaInput
+  if(!URL.includes("https://en.wikipedia.org/wiki/")){ 
+    showSnackbar('Please enter a valid Wikipedia URL', 'error');
+    // console.log("Please enter a valid Wikipedia URL")
+    return
+  } 
+
+  let wikitext = URL.split('https://en.wikipedia.org/wiki/')
+    try{
+
+
+    const response = await WikiDataFromDb(wikitext[1].toLowerCase());
+    const data = response?.data;
+    
+  
+    if (response.status === 200) {
+      const listData = [data];
+      const mcqContent = listData[0]?.mcq_content || {};
+      let remixData = null;
+      if(mcqType === "Simulator Viewer"){
+        remixData = mcqContent["simulator"] || null;
+      }
+      else{
+         remixData = mcqContent[mcqType?.toLowerCase()] || null;
+      }
+
+      console.log(remixData)
+      
+      if (remixData && remixData?.length > 0) {
+        setMcqData(remixData);
+        setViewMcq(true);
+        setMcqLoading(false);
+        showSnackbar("MCQ Generated Successfully", "success");
+      } else {
+        GeneraMcqswithAi();
+        setMcqLoading(true);
+      }
+    } else if (response.status === 404) {
+      GeneraMcqswithAi();
+      setMcqLoading(true);
+    }
+      
+    }
+    catch(error){
+      console.error("Error submitting text:", error);
+      setError(error.message);
+      setMcqLoading(false)
+    }
+  }
+  
+
+  const GeneraMcqswithAi = async()=>{
+    setSimulationActive(false)
+
+    if(!summary) return
+  //   if((showApiKeyToggle&&!GetApikey)){
+  //     showSnackbar('Please enter a valid API key', 'error');
+  //     return;
+  //  }
+    setMcqLoading(true)
+    try{
+      let summary = ""
+      if(mcqType === "Summary"){
+        summary = GetSummary
+      }else if(mcqType === "Code"){
+        summary = codeOutput
+      }else if(mcqType === "Simulator Viewer"){
+        summary = `${activeFormat} simulator viewer`
+      }
+      const response = await fetch("/api/mcq", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          summary:summary,
+          apiKeyFormate:GetApikey
+        }),
+      });
+
+      const data = await response.json();
+      console.log(data?.mcq?.questions)
+      if(response.status === 200){
+        setMcqData(data?.mcq?.questions)
+        setViewMcq(true)
+        setMcqLoading(false)
+        // router.push("/mcq")
+        showSnackbar("MCQ Generated Successfully", "success")
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to generate visualization");
+      }
+      
+    }catch(error){
+      console.error("Error submitting text:", error);
+      setError(error.message);
+    }finally{
+      setMcqLoading(false)
+    }
+
+  }
+
 
 
 
@@ -1045,38 +1187,32 @@ if(remixVersion !== "0"){
 </Grid>
 
 {/* Remix Prompt */}
-<Card elevation={2} sx={{ p: 2, my: 2 }}>
-      <div className="flex flex-wrap gap-4 items-center">
-        {/* <button 
-          className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('1');
-            saveRemixVersion('1');
-        }}
-          disabled={isProcessing}
-        >
-          Remix Prompt 1
-        </button>
+{/* <Card elevation={2} sx={{ p: 2, my: 2 }}>
+  <div className="flex flex-wrap gap-4 items-center">
+    <button 
+      className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
+      onClick={() => fetchRemixWikiData("1")}
+      disabled={isProcessing}
+    >
+      Remix Prompt 1
+    </button>
          
-        <button 
-          className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('2');
-            saveRemixVersion('2');
-        }}
-          disabled={isProcessing}
-        >
-          Remix Prompt 2
-        </button> 
-        <button 
-          className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('3');
-            saveRemixVersion('3');
-        }}
-          disabled={isProcessing}
-        >
-          Remix Prompt 3
-        </button> */}
-      </div>
-    </Card>
+    <button 
+      className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
+      onClick={() => fetchRemixWikiData("2")}
+      disabled={isProcessing}
+    >
+      Remix Prompt 2
+    </button> 
+    <button 
+      className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
+      onClick={() => fetchRemixWikiData("3")}
+      disabled={isProcessing}
+    >
+      Remix Prompt 3
+    </button>
+  </div>
+</Card> */}
 
 
 {/* API KEY ADDED */}
@@ -1146,34 +1282,28 @@ if(remixVersion !== "0"){
   </>
 )} */}
 
- <button 
-          className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('1');
-            saveRemixVersion('1');
-        }}
-          disabled={isProcessing}
-        >
-          Remix Prompt 1
-        </button>
+<button 
+      className={`p-2 rounded-lg ${remixVersion === "1" ? 'bg-violet-600 text-white hover:bg-violet-700 transition-colors' : 'bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors'}`}
+      onClick={() => fetchRemixWikiData("1")}
+      disabled={isProcessing || !codeOutput}
+    >
+      Remix Prompt 1
+    </button>
          
-        <button 
-          className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('2');
-            saveRemixVersion('2');
-        }}
-          disabled={isProcessing}
-        >
-          Remix Prompt 2
-        </button> 
-        <button 
-          className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
-          onClick={() => {setRemixVersion('3');
-            saveRemixVersion('3');
-        }}
-          disabled={isProcessing}
-        >
-          Remix Prompt 3
-        </button>
+    <button 
+      className={`p-2 rounded-lg ${remixVersion === "2" ? 'bg-blue-600 text-white hover:bg-blue-700 transition-colors' : 'bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors'}`}
+      onClick={() => fetchRemixWikiData("2")}
+        disabled={isProcessing || !codeOutput}
+    >
+      Remix Prompt 2
+    </button> 
+    <button 
+      className={`p-2 rounded-lg ${remixVersion === "3" ? 'bg-green-600 text-white hover:bg-green-700 transition-colors' : 'bg-green-100 text-green-600 hover:bg-green-200 transition-colors'}`}
+      onClick={() => fetchRemixWikiData("3")}
+      disabled={isProcessing || !codeOutput}
+    >
+      Remix Prompt 3
+    </button>
 </div>
 
 <div className="w-full flex justify-end flex-col md:flex-row gap-6 items-center ">
@@ -1279,10 +1409,24 @@ if(remixVersion !== "0"){
         <div className="border-2 border-dashed rounded-lg p-6 text-center">
           {imagePreview ? (
             <div className="space-y-4">
-              <img
-                src={imagePreview}
-                alt="Preview"
+              <Magnifier
+                imageSrc={imagePreview}
+                imageAlt="Preview"
+                mouseActivation="click"
+                touchActivation="tap"
+                dragToMove={true}
                 className="max-h-48 mx-auto rounded"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  cursor: 'zoom-in'
+                }}
+                magnifierSize="50%"
+                magnifierBorderSize={1}
+                magnifierBorderColor="#fff"
+                magnifierBackgroundColor="#fff"
+                magnifierShadowColor="rgba(0,0,0,0.2)"
+                magnifierShadowBlur={5}
               />
               <button
                 type="button"
@@ -1406,19 +1550,14 @@ if(remixVersion !== "0"){
   </Card>
 
 {/* Mcq */}
-{viewMcq && !isProcessing && (
-  mcqLoading ? (
-    <div className="flex justify-center items-center h-full">
-      <Skeleton variant='rectangular' height={100} width={"100%"} />
-    </div>
-  ) : (
-    <Mcq 
-      mcqOptions={mcqData} 
-      mcqType={mcqType}
-      wikiText={wikipediaInput.split('https://en.wikipedia.org/wiki/')[1]}
-    />
-  )
-)}
+{viewMcq && !isProcessing &&< >
+
+
+
+  {mcqLoading ? (<div className="flex justify-center items-center h-full">
+  <Skeleton variant='rectangular' height={100} width={"100%"} />
+  </div>):(<Mcq mcqOptions={mcqData} mcqType={mcqType} wikiText={wikipediaInput.split('https://en.wikipedia.org/wiki/')[1]} /> )}
+</>}
 
             
             <Snackbar
