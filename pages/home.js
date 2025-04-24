@@ -1340,21 +1340,19 @@ if(remixVersion !== "0"){
                 </h3>
 
                 {/* <span className="text-md">Console log</span> */}
-                <IconButton 
+                {summary && (
+      <button 
         onClick={() => setShowProFeatures(!showProFeatures)}
-        className="flex items-center gap-1"
-        disabled={!summary}
+        className={`px-3 py-1 rounded-lg text-md ${
+          showProFeatures 
+            ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
+            : 'bg-green-100 text-green-600 hover:bg-green-200'
+        } transition-colors flex items-center gap-1`}
       >
-        <ExpandCircleDownOutlinedIcon 
-          sx={{ 
-            fontSize: 20,
-            transform: showProFeatures ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s ease',
-            color:"black"
-          }} 
-          aria-label="Toggle pro features" 
-        />
-                </IconButton>
+        {showProFeatures ? "Hide MCQs " : "Generate MCQs"}
+       
+      </button>
+    )}
  
  </div>
 <div className="bg-gray-100 mt-3 p-4 rounded-lg">
